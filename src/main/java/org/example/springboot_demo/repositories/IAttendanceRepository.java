@@ -40,11 +40,4 @@ public interface IAttendanceRepository extends JpaRepository<AttendanceEntity, L
             "and a.checkInStatus = 'absent'" +
             "and a.isPaidLeave = false")
     int countUnpaidLeaves(@Param("studentId") Long studentId, @Param("month") int month, @Param("year") int year);
-
-    @Query("select count(a) " +
-            "from AttendanceEntity a " +
-            "where :studentId is null or a.student.studentId = :studentId " +
-            "and :month is null or month(a.date) = :month " +
-            "and :year is null or year(a.date) = :year ")
-    List<AttendanceEntity> findByOptionalParams(@Param("studentId") Long studentId, @Param("month") int month, @Param("year") int year);
 }
