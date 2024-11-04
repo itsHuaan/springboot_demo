@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 04, 2024 at 11:02 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Generation Time: Nov 04, 2024 at 05:52 PM
+-- Server version: 10.4.28-MariaDB
+-- PHP Version: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -33,15 +33,21 @@ CREATE TABLE `tbl_attendance` (
   `check_out` time(6) DEFAULT NULL,
   `date` date DEFAULT NULL,
   `student_id` bigint(20) NOT NULL,
-  `notes` varchar(255) DEFAULT NULL
+  `notes` varchar(255) DEFAULT NULL,
+  `check_in_status` varchar(255) DEFAULT NULL,
+  `check_out_status` varchar(255) DEFAULT NULL,
+  `is_paid_leave` bit(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_vietnamese_ci;
 
 --
 -- Dumping data for table `tbl_attendance`
 --
 
-INSERT INTO `tbl_attendance` (`attendance_id`, `check_in`, `check_out`, `date`, `student_id`, `notes`) VALUES
-(1, '15:41:10.000000', '15:41:30.000000', '2024-11-04', 1, 'absent, leaveEarly');
+INSERT INTO `tbl_attendance` (`attendance_id`, `check_in`, `check_out`, `date`, `student_id`, `notes`, `check_in_status`, `check_out_status`, `is_paid_leave`) VALUES
+(1, '23:42:22.000000', '23:50:28.000000', '2024-11-04', 1, NULL, 'absent', '', b'1'),
+(2, '23:42:26.000000', '23:50:33.000000', '2024-11-04', 2, NULL, 'absent', '', b'1'),
+(3, '23:42:28.000000', '23:50:37.000000', '2024-11-04', 3, NULL, 'absent', '', b'1'),
+(4, '23:42:31.000000', '23:50:40.000000', '2024-11-04', 4, NULL, 'absent', '', b'1');
 
 -- --------------------------------------------------------
 
@@ -95,7 +101,7 @@ ALTER TABLE `tbl_student`
 -- AUTO_INCREMENT for table `tbl_attendance`
 --
 ALTER TABLE `tbl_attendance`
-  MODIFY `attendance_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `attendance_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `tbl_student`

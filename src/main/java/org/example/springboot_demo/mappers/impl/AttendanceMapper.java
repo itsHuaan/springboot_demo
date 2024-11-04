@@ -14,9 +14,12 @@ public class AttendanceMapper implements IBaseMapper<AttendanceDto, AttendanceMo
         return AttendanceDto.builder()
                 .student(attendanceEntity.getStudent().getName())
                 .checkIn(attendanceEntity.getCheckIn())
+                .checkInStatus(attendanceEntity.getCheckInStatus())
                 .checkOut(attendanceEntity.getCheckOut())
+                .checkOutStatus(attendanceEntity.getCheckOutStatus())
                 .date(attendanceEntity.getDate())
                 .notes(attendanceEntity.getNotes())
+                .isPaidLeave(attendanceEntity.isPaidLeave())
                 .build();
     }
 
@@ -26,10 +29,13 @@ public class AttendanceMapper implements IBaseMapper<AttendanceDto, AttendanceMo
         studentEntity.setStudentId(attendanceModel.getStudentId());
         return AttendanceEntity.builder()
                 .checkIn(attendanceModel.getCheckIn())
+                .checkInStatus(attendanceModel.getCheckInStatus())
                 .checkOut(attendanceModel.getCheckOut())
+                .checkOutStatus(attendanceModel.getCheckOutStatus())
                 .date(attendanceModel.getDate())
                 .notes(attendanceModel.getNotes())
                 .student(studentEntity)
+                .isPaidLeave(attendanceModel.isPaidLeave())
                 .build();
     }
 }

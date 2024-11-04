@@ -1,17 +1,22 @@
 package org.example.springboot_demo.services.impl;
 
-import org.apache.catalina.mapper.Mapper;
+import org.example.springboot_demo.dtos.AttendanceStatisticsDto;
 import org.example.springboot_demo.dtos.AttendanceDto;
+import org.example.springboot_demo.dtos.StudentDto;
 import org.example.springboot_demo.entities.AttendanceEntity;
+import org.example.springboot_demo.entities.StudentEntity;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
+import org.example.springboot_demo.mappers.impl.StudentMapper;
 import org.example.springboot_demo.models.Notes;
 import org.example.springboot_demo.repositories.IAttendanceRepository;
+import org.example.springboot_demo.repositories.IStudentRepository;
 import org.example.springboot_demo.services.IAttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,29 +25,35 @@ import java.util.Optional;
 public class AttendanceService implements IAttendanceService {
 
     private final IAttendanceRepository iAttendanceRepository;
-    private final AttendanceMapper mapper;
+    private final IStudentRepository iStudentRepository;
+    private final AttendanceMapper attendanceMapper;
+    private final StudentMapper studentMapper;
 
     @Autowired
     public AttendanceService(final IAttendanceRepository iAttendanceRepository,
-                             final AttendanceMapper mapper) {
+                             final IStudentRepository iStudentRepository,
+                             final AttendanceMapper attendanceMapper,
+                             final StudentMapper studentMapper) {
         this.iAttendanceRepository = iAttendanceRepository;
-        this.mapper = mapper;
+        this.iStudentRepository = iStudentRepository;
+        this.attendanceMapper = attendanceMapper;
+        this.studentMapper = studentMapper;
     }
 
     @Override
     public List<AttendanceDto> findAll() {
-        return iAttendanceRepository.findAll().stream().map(mapper::toDTO).toList();
+        return iAttendanceRepository.findAll().stream().map(attendanceMapper::toDTO).toList();
     }
 
     @Override
     public AttendanceDto findById(Long id) {
-        return mapper.toDTO(Objects.requireNonNull(iAttendanceRepository.findById(id).orElse(null)));
+        return attendanceMapper.toDTO(Objects.requireNonNull(iAttendanceRepository.findById(id).orElse(null)));
     }
 
     @Override
     public AttendanceDto save(AttendanceEntity attendanceEntity) {
         AttendanceEntity attendance = iAttendanceRepository.save(attendanceEntity);
-        return mapper.toDTO(attendance);
+        return attendanceMapper.toDTO(attendance);
     }
 
     @Override
@@ -52,26 +63,63 @@ public class AttendanceService implements IAttendanceService {
 
     @Override
     public List<AttendanceDto> getByDate(LocalDate date) {
-        return iAttendanceRepository.findByDate(date).stream().map(mapper::toDTO).toList();
+        return iAttendanceRepository.findByDate(date).stream().map(attendanceMapper::toDTO).toList();
     }
 
     @Override
     public AttendanceDto checkingOut(AttendanceEntity attendance) {
         LocalTime defaultCheckOut = LocalTime.of(17, 30, 0);
-        Optional<AttendanceEntity> currentAttendance = iAttendanceRepository.findByStudent_StudentIdAndDate(attendance.getStudent().getStudentId(), attendance.getDate());
-        if (currentAttendance.isPresent()) {
-            AttendanceEntity attendanceEntity = currentAttendance.get();
-            attendanceEntity.setCheckOut(LocalTime.now());
+        Optional<AttendanceEntity> currentAttendanceOpt = iAttendanceRepository.findByStudent_StudentIdAndDate(attendance.getStudent().getStudentId(), attendance.getDate());
+        if (currentAttendanceOpt.isPresent()) {
+            AttendanceEntity currentAttendance = currentAttendanceOpt.get();
+            currentAttendance.setCheckOut(LocalTime.now());
 
-            String note = attendanceEntity.getNotes() != null ? attendanceEntity.getNotes() : "";
-            if (attendanceEntity.getCheckOut().isBefore(defaultCheckOut)) {
-                note += ", " + Notes.leaveEarly;
+            String checkOutStatus = currentAttendance.getCheckOutStatus() != null
+                    ? currentAttendance.getCheckOutStatus()
+                    : "";
+            if (currentAttendance.getCheckOut().isBefore(defaultCheckOut)) {
+                checkOutStatus += Notes.leaveEarly.toString();
             }
-            attendanceEntity.setNotes(note);
-            AttendanceEntity savedAttendance = iAttendanceRepository.save(attendanceEntity);
-            return mapper.toDTO(savedAttendance);
-        } else {
-            return null;
+            if ("absent".equalsIgnoreCase(currentAttendance.getCheckOutStatus())) {
+                currentAttendance.setPaidLeave(canGrantPaidLeave(
+                        currentAttendance.getStudent().getStudentId(),
+                        currentAttendance.getDate().getMonthValue(),
+                        currentAttendance.getDate().getYear()
+                ));
+            }
+            currentAttendance.setCheckOutStatus(checkOutStatus);
+            return attendanceMapper.toDTO(iAttendanceRepository.save(currentAttendance));
         }
+        return null;
+    }
+
+    @Override
+    public boolean canGrantPaidLeave(Long studentId, int month, int year) {
+        return iAttendanceRepository.countPaidLeaves(studentId, month, year) < 1;
+    }
+
+    @Override
+    public List<AttendanceStatisticsDto> getStatistics(Long studentId, int month, int year) {
+        List<AttendanceStatisticsDto> statisticsDtos = new ArrayList<>();
+        if (studentId != null) {
+            StudentEntity studentEntity = iStudentRepository.findById(studentId).orElse(null);
+            if (studentEntity != null) {
+                StudentDto studentDto = studentMapper.toDTO(studentEntity);
+                int workingDays = iAttendanceRepository.countWorkingDays(studentId, month, year);
+                int paidLeaves = iAttendanceRepository.countPaidLeaves(studentId, month, year);
+                int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentId, month, year);
+                statisticsDtos.add(new AttendanceStatisticsDto(studentDto.getName(), workingDays, paidLeaves, unpaidLeaves));
+            }
+        } else {
+            statisticsDtos = iStudentRepository.findAll().stream()
+                    .map(studentEntity -> {
+                        StudentDto studentDto = studentMapper.toDTO(studentEntity);
+                        int workingDays = iAttendanceRepository.countWorkingDays(studentDto.getStudentId(), month, year);
+                        int paidLeaves = iAttendanceRepository.countPaidLeaves(studentDto.getStudentId(), month, year);
+                        int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentDto.getStudentId(), month, year);
+                        return new AttendanceStatisticsDto(studentDto.getName(), workingDays, paidLeaves, unpaidLeaves);
+                    }).toList();
+        }
+        return statisticsDtos;
     }
 }

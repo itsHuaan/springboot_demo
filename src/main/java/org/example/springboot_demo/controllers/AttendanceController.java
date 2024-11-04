@@ -37,17 +37,24 @@ public class AttendanceController {
     @PostMapping("checkin")
     public ResponseEntity<?> createAttendance(@RequestBody AttendanceModel attendanceModel) {
         attendanceModel.setCheckIn(LocalTime.now());
-        String note = "";
+        String checkInStatus = "";
         LocalTime late = defaultCheckIn.plusMinutes(30);
         LocalTime absent = defaultCheckIn.plusHours(1);
         if (attendanceModel.getCheckIn().isAfter(absent)) {
-            note += ("" + Notes.absent);
+            checkInStatus += Notes.absent.toString();
+            attendanceModel.setPaidLeave(attendanceService.canGrantPaidLeave(
+                    attendanceModel.getStudentId(),
+                    attendanceModel.getDate().getMonthValue(),
+                    attendanceModel.getDate().getYear()
+            ));
         } else if (attendanceModel.getCheckIn().isAfter(late)) {
-            note += ("" + Notes.lateArrival);
+            checkInStatus += Notes.lateArrival.toString();
+            attendanceModel.setPaidLeave(false);
         } else {
-            note += ("" + Notes.onTime);
+            checkInStatus += Notes.onTime.toString();
+            attendanceModel.setPaidLeave(false);
         }
-        attendanceModel.setNotes(note);
+        attendanceModel.setCheckInStatus(checkInStatus);
         return attendanceService.save(mapper.toEntity(attendanceModel)) != null
                 ? new ResponseEntity<>(attendanceModel, HttpStatus.CREATED)
                 : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -58,5 +65,12 @@ public class AttendanceController {
         return attendanceService.checkingOut(mapper.toEntity(attendanceModel)) != null
                 ? new ResponseEntity<>(attendanceModel, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("statistics")
+    public ResponseEntity<?> getAttendanceStatistics(@RequestParam(required = false) Long studentId,
+                                                     @RequestParam(required = false) Integer month,
+                                                     @RequestParam(required = false) Integer year) {
+        return new ResponseEntity<>(attendanceService.getStatistics(studentId, month, year), HttpStatus.OK);
     }
 }

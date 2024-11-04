@@ -12,7 +12,10 @@ import java.time.*;
 public class AttendanceModel {
     private LocalDate date = LocalDate.now();
     private LocalTime checkIn;
+    private String checkInStatus;
     private LocalTime checkOut;
+    private String checkOutStatus;
     private String notes;
     private long studentId;
+    private boolean isPaidLeave;
 }
