@@ -8,7 +8,7 @@ import org.example.springboot_demo.entities.AttendanceEntity;
 import org.example.springboot_demo.entities.EmployeeEntity;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
 import org.example.springboot_demo.mappers.impl.EmployeeMapper;
-import org.example.springboot_demo.models.Notes;
+import org.example.springboot_demo.models.AttendanceStatus;
 import org.example.springboot_demo.repositories.IAttendanceRepository;
 import org.example.springboot_demo.repositories.IEmployeeRepository;
 import org.example.springboot_demo.services.IAttendanceService;
@@ -51,12 +51,43 @@ public class AttendanceService implements IAttendanceService {
 
     @Override
     public AttendanceDto save(AttendanceEntity attendanceEntity) {
-        long studentId = attendanceEntity.getEmployee().getEmployeeId();
+        long employeeId = attendanceEntity.getEmployee().getEmployeeId();
         int month = attendanceEntity.getDate().getMonthValue();
         int year = attendanceEntity.getDate().getYear();
-        EmployeeEntity employeeEntity = iEmployeeRepository.findById(studentId).orElse(null);
-        int paidLeaves = iAttendanceRepository.countPaidLeaves(studentId, month, year);
-        int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentId, month, year);
+        EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
+        int paidLeaves = iAttendanceRepository.countPaidLeaves(employeeId, month, year);
+        int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(employeeId, month, year);
+
+        LocalTime checkInTime = attendanceEntity.getCheckIn();
+        String checkInStatus = null;
+
+        if (checkInTime != null) {
+            if (checkInTime.isBefore(LocalTime.of(8, 30))) {
+                checkInStatus = AttendanceStatus.onTime.toString();
+            } else if (checkInTime.isBefore(LocalTime.of(9, 0))) {
+                checkInStatus = AttendanceStatus.lateArrival.toString();
+            } else if (checkInTime.isAfter(LocalTime.of(9, 0))) {
+                checkInStatus = AttendanceStatus.absent.toString();
+            }
+        } else {
+            checkInStatus = AttendanceStatus.absent.toString();
+        }
+        attendanceEntity.setCheckInStatus(checkInStatus);
+
+        LocalTime checkOutTime = attendanceEntity.getCheckOut();
+        String checkOutStatus = null;
+
+        if (checkOutTime != null) {
+            if (checkOutTime.isBefore(LocalTime.of(17, 0))) {
+                if (checkOutTime.isBefore(LocalTime.of(16, 45))) {
+                    checkOutStatus = AttendanceStatus.leaveEarly.toString();
+                } else {
+                    checkOutStatus = AttendanceStatus.onTime.toString();
+                }
+            }
+        }
+        attendanceEntity.setCheckOutStatus(checkOutStatus);
+
         if (employeeEntity != null) {
             if (unpaidLeaves > 0) {
                 paidLeaves -= Math.min(unpaidLeaves, paidLeaves);
@@ -70,6 +101,7 @@ public class AttendanceService implements IAttendanceService {
         }
         return attendanceMapper.toDTO(iAttendanceRepository.save(attendanceEntity));
     }
+
 
     @Override
     public int delete(Long aLong) {
@@ -93,7 +125,7 @@ public class AttendanceService implements IAttendanceService {
                     ? currentAttendance.getCheckOutStatus()
                     : "";
             if (currentAttendance.getCheckOut().isBefore(defaultCheckOut)) {
-                checkOutStatus += Notes.leaveEarly.toString();
+                checkOutStatus += AttendanceStatus.leaveEarly.toString();
             }
             if ("absent".equalsIgnoreCase(currentAttendance.getCheckOutStatus())) {
                 currentAttendance.setPaidLeave(canGrantPaidLeave(
@@ -109,19 +141,19 @@ public class AttendanceService implements IAttendanceService {
     }
 
     @Override
-    public boolean canGrantPaidLeave(Long studentId, int month, int year) {
-        return iAttendanceRepository.countPaidLeaves(studentId, month, year) < 1;
+    public boolean canGrantPaidLeave(Long employeeId, int month, int year) {
+        return iAttendanceRepository.countPaidLeaves(employeeId, month, year) < 1;
     }
 
     @Override
-    public List<AttendanceStatisticsDto> getStatistics(Long studentId, int month, int year) {
+    public List<AttendanceStatisticsDto> getStatistics(Long employeeId, int month, int year) {
         List<AttendanceStatisticsDto> statisticsDtos = new ArrayList<>();
-        if (studentId != null) {
-            EmployeeEntity employeeEntity = iEmployeeRepository.findById(studentId).orElse(null);
+        if (employeeId != null) {
+            EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
             if (employeeEntity != null) {
-                int workingDays = iAttendanceRepository.countWorkingDays(studentId, month, year);
-                int paidLeaves = iAttendanceRepository.countPaidLeaves(studentId, month, year);
-                int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentId, month, year);
+                int workingDays = iAttendanceRepository.countWorkingDays(employeeId, month, year);
+                int paidLeaves = iAttendanceRepository.countPaidLeaves(employeeId, month, year);
+                int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(employeeId, month, year);
                 statisticsDtos.add(new AttendanceStatisticsDto(employeeEntity.getName(), workingDays, paidLeaves, unpaidLeaves));
             }
         } else {

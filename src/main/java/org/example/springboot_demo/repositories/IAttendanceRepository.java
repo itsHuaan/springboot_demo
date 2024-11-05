@@ -17,27 +17,27 @@ public interface IAttendanceRepository extends JpaRepository<AttendanceEntity, L
 
     @Query("select count(a) " +
             "from AttendanceEntity a " +
-            "where a.employee.employeeId = :studentId " +
+            "where a.employee.employeeId = :employeeId " +
             "and month(a.date) = :month " +
             "and year(a.date) = :year " +
             "and a.checkInStatus <> 'absent'")
-    int countWorkingDays(@Param("studentId") Long studentId, @Param("month") int month, @Param("year") int year);
+    int countWorkingDays(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
 
     @Query("select count(a) " +
             "from AttendanceEntity a " +
-            "where a.employee.employeeId = :studentId " +
+            "where a.employee.employeeId = :employeeId " +
             "and month(a.date) = :month " +
             "and year(a.date) = :year " +
             "and a.isPaidLeave = true")
-    int countPaidLeaves(@Param("studentId") Long studentId, @Param("month") int month, @Param("year") int year);
+    int countPaidLeaves(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
 
 
     @Query("select count(a) " +
             "from AttendanceEntity a " +
-            "where a.employee.employeeId = :studentId " +
+            "where a.employee.employeeId = :employeeId " +
             "and month(a.date) = :month " +
             "and year(a.date) = :year " +
             "and a.checkInStatus = 'absent'" +
             "and a.isPaidLeave = false")
-    int countUnpaidLeaves(@Param("studentId") Long studentId, @Param("month") int month, @Param("year") int year);
+    int countUnpaidLeaves(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
 }
