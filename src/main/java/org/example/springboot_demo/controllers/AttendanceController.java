@@ -31,11 +31,11 @@ public class AttendanceController {
     public ResponseEntity<?> getAttendance(@RequestParam(required = false) LocalDate date) {
         return date != null
                 ? ResponseEntity.ok(attendanceService.getByDate(date))
-                : ResponseEntity.ok(attendanceService.findAll());
+                : ResponseEntity.ok(attendanceService.getAttendanceGroupByDate());
     }
 
     @PostMapping("checkin")
-    public ResponseEntity<?> createAttendance(@RequestBody AttendanceModel attendanceModel) {
+    public ResponseEntity<?> checkIn(@RequestBody AttendanceModel attendanceModel) {
         attendanceModel.setCheckIn(LocalTime.now());
         String checkInStatus = "";
         LocalTime late = defaultCheckIn.plusMinutes(30);
@@ -61,7 +61,7 @@ public class AttendanceController {
     }
 
     @PutMapping("checkout")
-    public ResponseEntity<?> updateAttendance(@RequestBody AttendanceModel attendanceModel) {
+    public ResponseEntity<?> checkOut(@RequestBody AttendanceModel attendanceModel) {
         return attendanceService.checkingOut(mapper.toEntity(attendanceModel)) != null
                 ? new ResponseEntity<>(attendanceModel, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.BAD_REQUEST);

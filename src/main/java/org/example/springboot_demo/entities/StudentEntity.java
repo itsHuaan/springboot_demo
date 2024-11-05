@@ -17,6 +17,7 @@ public class StudentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long studentId;
     private String name;
+    private int unusedPaidLeaves = 0;
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<AttendanceEntity> attendanceList;
 }

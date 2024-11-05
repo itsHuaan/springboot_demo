@@ -1,5 +1,6 @@
 package org.example.springboot_demo.services.impl;
 
+import org.example.springboot_demo.dtos.AttendanceByDate;
 import org.example.springboot_demo.dtos.AttendanceStatisticsDto;
 import org.example.springboot_demo.dtos.AttendanceDto;
 import org.example.springboot_demo.dtos.StudentDto;
@@ -16,10 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AttendanceService implements IAttendanceService {
@@ -53,6 +52,9 @@ public class AttendanceService implements IAttendanceService {
     @Override
     public AttendanceDto save(AttendanceEntity attendanceEntity) {
         AttendanceEntity attendance = iAttendanceRepository.save(attendanceEntity);
+        int paidLeaves = iAttendanceRepository.countPaidLeaves(attendance.getStudent().getStudentId(),
+                attendance.getDate().getMonthValue(),
+                attendance.getDate().getYear());
         return attendanceMapper.toDTO(attendance);
     }
 
@@ -104,11 +106,20 @@ public class AttendanceService implements IAttendanceService {
         if (studentId != null) {
             StudentEntity studentEntity = iStudentRepository.findById(studentId).orElse(null);
             if (studentEntity != null) {
-                StudentDto studentDto = studentMapper.toDTO(studentEntity);
                 int workingDays = iAttendanceRepository.countWorkingDays(studentId, month, year);
                 int paidLeaves = iAttendanceRepository.countPaidLeaves(studentId, month, year);
                 int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentId, month, year);
-                statisticsDtos.add(new AttendanceStatisticsDto(studentDto.getName(), workingDays, paidLeaves, unpaidLeaves));
+                paidLeaves += studentEntity.getUnusedPaidLeaves();
+                statisticsDtos.add(new AttendanceStatisticsDto(studentEntity.getName(), workingDays, paidLeaves, unpaidLeaves));
+                if (unpaidLeaves > 0) {
+                    paidLeaves -= Math.min(unpaidLeaves, paidLeaves);
+                }
+                if (paidLeaves == 0) {
+                    studentEntity.setUnusedPaidLeaves(studentEntity.getUnusedPaidLeaves() + 1);
+                } else {
+                    studentEntity.setUnusedPaidLeaves(0);
+                }
+                iStudentRepository.save(studentEntity);
             }
         } else {
             statisticsDtos = iStudentRepository.findAll().stream()
@@ -117,9 +128,34 @@ public class AttendanceService implements IAttendanceService {
                         int workingDays = iAttendanceRepository.countWorkingDays(studentDto.getStudentId(), month, year);
                         int paidLeaves = iAttendanceRepository.countPaidLeaves(studentDto.getStudentId(), month, year);
                         int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentDto.getStudentId(), month, year);
+                        paidLeaves += studentEntity.getUnusedPaidLeaves();
+                        if (unpaidLeaves > 0) {
+                            paidLeaves -= Math.min(unpaidLeaves, paidLeaves);
+                        }
+                        if (paidLeaves == 0) {
+                            studentEntity.setUnusedPaidLeaves(studentEntity.getUnusedPaidLeaves() + 1);
+                        } else {
+                            studentEntity.setUnusedPaidLeaves(0);
+                        }
+                        iStudentRepository.save(studentEntity);
                         return new AttendanceStatisticsDto(studentDto.getName(), workingDays, paidLeaves, unpaidLeaves);
                     }).toList();
         }
         return statisticsDtos;
+    }
+
+    @Override
+    public List<AttendanceByDate> getAttendanceGroupByDate() {
+        List<AttendanceEntity> entities = iAttendanceRepository.findAll();
+        Map<LocalDate, List<AttendanceDto>> attendanceByDate = entities.stream()
+                .collect(Collectors.groupingBy(
+                        AttendanceEntity::getDate,
+                        Collectors.mapping(attendanceMapper::toDTO, Collectors.toList())
+                ));
+        return attendanceByDate.entrySet().stream()
+                .map(entry -> AttendanceByDate.builder()
+                        .date(entry.getKey())
+                        .attendances(entry.getValue())
+                        .build()).toList();
     }
 }

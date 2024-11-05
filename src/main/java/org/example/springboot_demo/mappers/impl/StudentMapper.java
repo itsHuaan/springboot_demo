@@ -15,6 +15,7 @@ public class StudentMapper implements IBaseMapper<StudentDto, StudentModel, Stud
         return StudentDto.builder()
                 .studentId(studentEntity.getStudentId())
                 .name(studentEntity.getName())
+                .unusedPaidLeaves(studentEntity.getUnusedPaidLeaves())
                 .build();
     }
 
