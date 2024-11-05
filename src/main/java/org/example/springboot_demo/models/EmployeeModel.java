@@ -1,16 +1,14 @@
-package org.example.springboot_demo.dtos;
+package org.example.springboot_demo.models;
 
 import lombok.*;
-
-import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudentDto {
-    private long studentId;
+public class EmployeeModel {
+    private long employeeId;
     private String name;
     private int unusedPaidLeaves = 0;
 }

@@ -2,9 +2,9 @@ package org.example.springboot_demo.services;
 
 import java.util.List;
 
-public interface IBaseService<DTO, Entity, ID> {
-    List<DTO> findAll();
-    DTO findById(ID id);
-    DTO save(Entity entity);
-    int delete(ID id);
+public interface IBaseService<T, U, K> {
+    List<T> findAll();
+    T findById(K id);
+    T save(U entity);
+    int delete(K id);
 }

@@ -1,7 +1,6 @@
 package org.example.springboot_demo.repositories;
 
 import org.example.springboot_demo.entities.AttendanceEntity;
-import org.example.springboot_demo.entities.StudentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,14 +9,15 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+
 public interface IAttendanceRepository extends JpaRepository<AttendanceEntity, Long> {
     List<AttendanceEntity> findByDate(LocalDate Date);
 
-    Optional<AttendanceEntity> findByStudent_StudentIdAndDate(long student_studentId, LocalDate date);
+    Optional<AttendanceEntity> findByEmployee_EmployeeIdAndDate(long employee_employeeId, LocalDate date);
 
     @Query("select count(a) " +
             "from AttendanceEntity a " +
-            "where a.student.studentId = :studentId " +
+            "where a.employee.employeeId = :studentId " +
             "and month(a.date) = :month " +
             "and year(a.date) = :year " +
             "and a.checkInStatus <> 'absent'")
@@ -25,7 +25,7 @@ public interface IAttendanceRepository extends JpaRepository<AttendanceEntity, L
 
     @Query("select count(a) " +
             "from AttendanceEntity a " +
-            "where a.student.studentId = :studentId " +
+            "where a.employee.employeeId = :studentId " +
             "and month(a.date) = :month " +
             "and year(a.date) = :year " +
             "and a.isPaidLeave = true")
@@ -34,7 +34,7 @@ public interface IAttendanceRepository extends JpaRepository<AttendanceEntity, L
 
     @Query("select count(a) " +
             "from AttendanceEntity a " +
-            "where a.student.studentId = :studentId " +
+            "where a.employee.employeeId = :studentId " +
             "and month(a.date) = :month " +
             "and year(a.date) = :year " +
             "and a.checkInStatus = 'absent'" +

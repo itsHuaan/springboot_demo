@@ -1,7 +1,7 @@
 package org.example.springboot_demo.mappers;
 
-public interface IBaseMapper<DTO, Model, Entity> {
-    DTO toDTO(Entity entity);
+public interface IBaseMapper<T, U, V> {
+    T toDTO(V entity);
 
-    Entity toEntity(Model model);
+    V toEntity(U model);
 }

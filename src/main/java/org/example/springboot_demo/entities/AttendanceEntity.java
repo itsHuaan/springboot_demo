@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
 
 @Getter
 @Setter
@@ -27,6 +25,6 @@ public class AttendanceEntity {
     private String notes;
     private boolean isPaidLeave;
     @ManyToOne
-    @JoinColumn(name = "student_id", nullable = false)
-    private StudentEntity student;
+    @JoinColumn(name = "employee_id", nullable = false)
+    private EmployeeEntity employee;
 }

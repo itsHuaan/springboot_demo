@@ -2,7 +2,7 @@ package org.example.springboot_demo.mappers.impl;
 
 import org.example.springboot_demo.dtos.AttendanceDto;
 import org.example.springboot_demo.entities.AttendanceEntity;
-import org.example.springboot_demo.entities.StudentEntity;
+import org.example.springboot_demo.entities.EmployeeEntity;
 import org.example.springboot_demo.mappers.IBaseMapper;
 import org.example.springboot_demo.models.AttendanceModel;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ public class AttendanceMapper implements IBaseMapper<AttendanceDto, AttendanceMo
     @Override
     public AttendanceDto toDTO(AttendanceEntity attendanceEntity) {
         return AttendanceDto.builder()
-                .student(attendanceEntity.getStudent().getName())
+                .student(attendanceEntity.getEmployee().getName())
                 .checkIn(attendanceEntity.getCheckIn())
                 .checkInStatus(attendanceEntity.getCheckInStatus())
                 .checkOut(attendanceEntity.getCheckOut())
@@ -25,8 +25,8 @@ public class AttendanceMapper implements IBaseMapper<AttendanceDto, AttendanceMo
 
     @Override
     public AttendanceEntity toEntity(AttendanceModel attendanceModel) {
-        StudentEntity studentEntity = new StudentEntity();
-        studentEntity.setStudentId(attendanceModel.getStudentId());
+        EmployeeEntity employeeEntity = new EmployeeEntity();
+        employeeEntity.setEmployeeId(attendanceModel.getEmployeeId());
         return AttendanceEntity.builder()
                 .checkIn(attendanceModel.getCheckIn())
                 .checkInStatus(attendanceModel.getCheckInStatus())
@@ -34,7 +34,7 @@ public class AttendanceMapper implements IBaseMapper<AttendanceDto, AttendanceMo
                 .checkOutStatus(attendanceModel.getCheckOutStatus())
                 .date(attendanceModel.getDate())
                 .notes(attendanceModel.getNotes())
-                .student(studentEntity)
+                .employee(employeeEntity)
                 .isPaidLeave(attendanceModel.isPaidLeave())
                 .build();
     }

@@ -1,4 +1,4 @@
-package org.example.springboot_demo.models;
+package org.example.springboot_demo.dtos;
 
 import lombok.*;
 
@@ -7,8 +7,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudentModel {
-    private long studentId;
+public class EmployeeDto {
+    private long employeeId;
     private String name;
     private int unusedPaidLeaves = 0;
 }

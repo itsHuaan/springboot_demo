@@ -16,6 +16,6 @@ public class AttendanceModel {
     private LocalTime checkOut;
     private String checkOutStatus;
     private String notes;
-    private long studentId;
+    private long employeeId;
     private boolean isPaidLeave;
 }

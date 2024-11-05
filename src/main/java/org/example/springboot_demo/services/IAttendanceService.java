@@ -12,6 +12,6 @@ public interface IAttendanceService extends IBaseService<AttendanceDto, Attendan
     List<AttendanceDto> getByDate(LocalDate date);
     AttendanceDto checkingOut(AttendanceEntity attendance);
     boolean canGrantPaidLeave(Long studentId, int month, int year);
-    List<AttendanceStatisticsDto> getStatistics(Long studentId, int month, int year);
+    List<AttendanceStatisticsDto> getStatistics(Long employeeId, int month, int year);
     List<AttendanceByDate> getAttendanceGroupByDate();
 }
