@@ -12,4 +12,9 @@ public class AttendanceStatisticsDto {
     private int workingDays;
     private int paidLeaveDays;
     private int unpaidLeaveDays;
+    private int lateDays;
+    private long totalLateTime;
+    private int overtimeDays;
+    private long totalOvertimeMinutes;
 }
+

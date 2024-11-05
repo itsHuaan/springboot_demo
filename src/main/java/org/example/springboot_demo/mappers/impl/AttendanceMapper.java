@@ -13,13 +13,15 @@ public class AttendanceMapper implements IBaseMapper<AttendanceDto, AttendanceMo
     public AttendanceDto toDTO(AttendanceEntity attendanceEntity) {
         return AttendanceDto.builder()
                 .student(attendanceEntity.getEmployee().getName())
-                .checkIn(attendanceEntity.getCheckIn())
+                .checkInTimes(attendanceEntity.getCheckInTimes())
                 .checkInStatus(attendanceEntity.getCheckInStatus())
                 .checkOut(attendanceEntity.getCheckOut())
                 .checkOutStatus(attendanceEntity.getCheckOutStatus())
                 .date(attendanceEntity.getDate())
                 .notes(attendanceEntity.getNotes())
                 .isPaidLeave(attendanceEntity.isPaidLeave())
+                .isHalfDay(attendanceEntity.isHalfDay())
+                .isOvertime(attendanceEntity.isOvertime())
                 .build();
     }
 
@@ -28,7 +30,7 @@ public class AttendanceMapper implements IBaseMapper<AttendanceDto, AttendanceMo
         EmployeeEntity employeeEntity = new EmployeeEntity();
         employeeEntity.setEmployeeId(attendanceModel.getEmployeeId());
         return AttendanceEntity.builder()
-                .checkIn(attendanceModel.getCheckIn())
+                .checkInTimes(attendanceModel.getCheckInTimes())
                 .checkInStatus(attendanceModel.getCheckInStatus())
                 .checkOut(attendanceModel.getCheckOut())
                 .checkOutStatus(attendanceModel.getCheckOutStatus())
@@ -36,6 +38,9 @@ public class AttendanceMapper implements IBaseMapper<AttendanceDto, AttendanceMo
                 .notes(attendanceModel.getNotes())
                 .employee(employeeEntity)
                 .isPaidLeave(attendanceModel.isPaidLeave())
+                .isHalfDay(attendanceModel.isHalfDay())
+                .isOvertime(attendanceModel.isOvertime())
                 .build();
     }
 }
+

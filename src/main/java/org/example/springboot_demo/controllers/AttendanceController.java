@@ -3,7 +3,7 @@ package org.example.springboot_demo.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
 import org.example.springboot_demo.models.AttendanceModel;
-import org.example.springboot_demo.models.Notes;
+import org.example.springboot_demo.models.AttendanceStatus;
 import org.example.springboot_demo.services.impl.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,17 +44,17 @@ public class AttendanceController {
         LocalTime late = defaultCheckIn.plusMinutes(30);
         LocalTime absent = defaultCheckIn.plusHours(1);
         if (attendanceModel.getCheckIn().isAfter(absent)) {
-            checkInStatus += Notes.absent.toString();
+            checkInStatus += AttendanceStatus.absent.toString();
             attendanceModel.setPaidLeave(attendanceService.canGrantPaidLeave(
                     attendanceModel.getEmployeeId(),
                     attendanceModel.getDate().getMonthValue(),
                     attendanceModel.getDate().getYear()
             ));
         } else if (attendanceModel.getCheckIn().isAfter(late)) {
-            checkInStatus += Notes.lateArrival.toString();
+            checkInStatus += AttendanceStatus.lateArrival.toString();
             attendanceModel.setPaidLeave(false);
         } else {
-            checkInStatus += Notes.onTime.toString();
+            checkInStatus += AttendanceStatus.onTime.toString();
             attendanceModel.setPaidLeave(false);
         }
         attendanceModel.setCheckInStatus(checkInStatus);

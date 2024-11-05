@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,10 +14,13 @@ import java.time.LocalTime;
 public class AttendanceDto {
     private String student;
     private LocalDate date;
-    private LocalTime checkIn;
+    private List<LocalTime> checkInTimes;
     private String checkInStatus;
     private LocalTime checkOut;
     private String checkOutStatus;
     private String notes;
     private boolean isPaidLeave;
+    private boolean isHalfDay;
+    private boolean isOvertime;
 }
+

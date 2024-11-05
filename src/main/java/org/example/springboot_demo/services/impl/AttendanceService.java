@@ -3,12 +3,10 @@ package org.example.springboot_demo.services.impl;
 import org.example.springboot_demo.dtos.AttendanceByDate;
 import org.example.springboot_demo.dtos.AttendanceStatisticsDto;
 import org.example.springboot_demo.dtos.AttendanceDto;
-import org.example.springboot_demo.dtos.EmployeeDto;
 import org.example.springboot_demo.entities.AttendanceEntity;
 import org.example.springboot_demo.entities.EmployeeEntity;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
-import org.example.springboot_demo.mappers.impl.EmployeeMapper;
-import org.example.springboot_demo.models.Notes;
+import org.example.springboot_demo.models.AttendanceStatus;
 import org.example.springboot_demo.repositories.IAttendanceRepository;
 import org.example.springboot_demo.repositories.IEmployeeRepository;
 import org.example.springboot_demo.services.IAttendanceService;
@@ -26,17 +24,14 @@ public class AttendanceService implements IAttendanceService {
     private final IAttendanceRepository iAttendanceRepository;
     private final IEmployeeRepository iEmployeeRepository;
     private final AttendanceMapper attendanceMapper;
-    private final EmployeeMapper employeeMapper;
 
     @Autowired
     public AttendanceService(final IAttendanceRepository iAttendanceRepository,
                              final IEmployeeRepository iEmployeeRepository,
-                             final AttendanceMapper attendanceMapper,
-                             final EmployeeMapper employeeMapper) {
+                             final AttendanceMapper attendanceMapper) {
         this.iAttendanceRepository = iAttendanceRepository;
         this.iEmployeeRepository = iEmployeeRepository;
         this.attendanceMapper = attendanceMapper;
-        this.employeeMapper = employeeMapper;
     }
 
     @Override
@@ -51,24 +46,38 @@ public class AttendanceService implements IAttendanceService {
 
     @Override
     public AttendanceDto save(AttendanceEntity attendanceEntity) {
-        long studentId = attendanceEntity.getEmployee().getEmployeeId();
-        int month = attendanceEntity.getDate().getMonthValue();
-        int year = attendanceEntity.getDate().getYear();
-        EmployeeEntity employeeEntity = iEmployeeRepository.findById(studentId).orElse(null);
-        int paidLeaves = iAttendanceRepository.countPaidLeaves(studentId, month, year);
-        int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentId, month, year);
-        if (employeeEntity != null) {
-            if (unpaidLeaves > 0) {
-                paidLeaves -= Math.min(unpaidLeaves, paidLeaves);
+        long employeeId = attendanceEntity.getEmployee().getEmployeeId();
+        LocalDate today = attendanceEntity.getDate(); // Giả sử attendanceEntity đã có ngày
+        int month = today.getMonthValue();
+        int year = today.getYear();
+        LocalTime currentCheckInTime = LocalTime.now();
+        Optional<AttendanceEntity> existingAttendance = iAttendanceRepository.findByEmployee_EmployeeIdAndDate(employeeId, today);
+        if (existingAttendance.isPresent()) {
+            AttendanceEntity attendanceToUpdate = existingAttendance.get();
+
+            if (attendanceToUpdate.getCheckInTimes() == null) {
+                attendanceToUpdate.setCheckInTimes(new ArrayList<>());
             }
-            if (paidLeaves == 0) {
-                employeeEntity.setUnusedPaidLeaves(employeeEntity.getUnusedPaidLeaves() + 1);
+            attendanceToUpdate.getCheckInTimes().add(currentCheckInTime);
+
+            if (currentCheckInTime.isAfter(LocalTime.of(8, 30))) {
+                attendanceToUpdate.setCheckInStatus(AttendanceStatus.lateArrival.toString());
             } else {
-                employeeEntity.setUnusedPaidLeaves(0);
+                attendanceToUpdate.setCheckInStatus(AttendanceStatus.onTime.toString());
             }
-            iEmployeeRepository.save(employeeEntity);
+
+            return attendanceMapper.toDTO(iAttendanceRepository.save(attendanceToUpdate));
+        } else {
+            attendanceEntity.setCheckInTimes(new ArrayList<>());
+            attendanceEntity.getCheckInTimes().add(currentCheckInTime);
+
+            if (currentCheckInTime.isAfter(LocalTime.of(8, 30))) {
+                attendanceEntity.setCheckInStatus(AttendanceStatus.lateArrival.toString());
+            } else {
+                attendanceEntity.setCheckInStatus(AttendanceStatus.onTime.toString());
+            }
+            return attendanceMapper.toDTO(iAttendanceRepository.save(attendanceEntity));
         }
-        return attendanceMapper.toDTO(iAttendanceRepository.save(attendanceEntity));
     }
 
     @Override
@@ -93,7 +102,7 @@ public class AttendanceService implements IAttendanceService {
                     ? currentAttendance.getCheckOutStatus()
                     : "";
             if (currentAttendance.getCheckOut().isBefore(defaultCheckOut)) {
-                checkOutStatus += Notes.leaveEarly.toString();
+                checkOutStatus += AttendanceStatus.leaveEarly.toString();
             }
             if ("absent".equalsIgnoreCase(currentAttendance.getCheckOutStatus())) {
                 currentAttendance.setPaidLeave(canGrantPaidLeave(
@@ -109,31 +118,39 @@ public class AttendanceService implements IAttendanceService {
     }
 
     @Override
-    public boolean canGrantPaidLeave(Long studentId, int month, int year) {
-        return iAttendanceRepository.countPaidLeaves(studentId, month, year) < 1;
+    public boolean canGrantPaidLeave(Long employeeId, int month, int year) {
+        return iAttendanceRepository.countPaidLeaves(employeeId, month, year) < 1;
     }
 
     @Override
-    public List<AttendanceStatisticsDto> getStatistics(Long studentId, int month, int year) {
+    public List<AttendanceStatisticsDto> getStatistics(Long employeeId, int month, int year) {
         List<AttendanceStatisticsDto> statisticsDtos = new ArrayList<>();
-        if (studentId != null) {
-            EmployeeEntity employeeEntity = iEmployeeRepository.findById(studentId).orElse(null);
-            if (employeeEntity != null) {
-                int workingDays = iAttendanceRepository.countWorkingDays(studentId, month, year);
-                int paidLeaves = iAttendanceRepository.countPaidLeaves(studentId, month, year);
-                int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentId, month, year);
-                statisticsDtos.add(new AttendanceStatisticsDto(employeeEntity.getName(), workingDays, paidLeaves, unpaidLeaves));
-            }
-        } else {
-            statisticsDtos = iEmployeeRepository.findAll().stream()
-                    .map(studentEntity -> {
-                        EmployeeDto employeeDto = employeeMapper.toDTO(studentEntity);
-                        int workingDays = iAttendanceRepository.countWorkingDays(employeeDto.getEmployeeId(), month, year);
-                        int paidLeaves = iAttendanceRepository.countPaidLeaves(employeeDto.getEmployeeId(), month, year);
-                        int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(employeeDto.getEmployeeId(), month, year);
-                        return new AttendanceStatisticsDto(employeeDto.getName(), workingDays, paidLeaves, unpaidLeaves);
-                    }).toList();
+        List<EmployeeEntity> employees = iEmployeeRepository.findAll();
+        for (EmployeeEntity employee : employees) {
+            int workingDays = iAttendanceRepository.countWorkingDays(employeeId, month, year);
+            int paidLeaves = iAttendanceRepository.countPaidLeaves(employeeId, month, year);
+            int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(employeeId, month, year);
+
+            int lateDays = iAttendanceRepository.countLateDays(employeeId, month, year);
+            long totalLateTime = iAttendanceRepository.sumLateMinutes(employeeId, month, year);
+
+            int overtimeDays = iAttendanceRepository.countOvertimeDays(employeeId, month, year);
+            long totalOvertimeMinutes = iAttendanceRepository.sumOvertimeMinutes(employeeId, month, year);
+
+            AttendanceStatisticsDto dto = AttendanceStatisticsDto.builder()
+                    .name(employee.getName())
+                    .workingDays(workingDays)
+                    .paidLeaveDays(paidLeaves)
+                    .unpaidLeaveDays(unpaidLeaves)
+                    .lateDays(lateDays)
+                    .totalLateTime(totalLateTime)
+                    .overtimeDays(overtimeDays)
+                    .totalOvertimeMinutes(totalOvertimeMinutes)
+                    .build();
+
+            statisticsDtos.add(dto);
         }
+
         return statisticsDtos;
     }
 

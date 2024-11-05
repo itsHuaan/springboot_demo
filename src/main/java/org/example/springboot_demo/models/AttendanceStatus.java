@@ -1,6 +1,6 @@
 package org.example.springboot_demo.models;
 
-public enum Notes {
+public enum AttendanceStatus {
     onTime,
     lateArrival,
     absent,

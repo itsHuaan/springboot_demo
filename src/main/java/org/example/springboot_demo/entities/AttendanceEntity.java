@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,13 +20,17 @@ public class AttendanceEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long attendanceId;
     private LocalDate date;
-    private LocalTime checkIn;
+    @ElementCollection
+    private List<LocalTime> checkInTimes = new ArrayList<>();
     private String checkInStatus;
     private LocalTime checkOut;
     private String checkOutStatus;
     private String notes;
     private boolean isPaidLeave;
+    private boolean isHalfDay;
+    private boolean isOvertime;
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     private EmployeeEntity employee;
 }
+

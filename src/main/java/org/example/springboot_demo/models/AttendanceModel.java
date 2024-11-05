@@ -3,6 +3,7 @@ package org.example.springboot_demo.models;
 import lombok.*;
 
 import java.time.*;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,4 +19,8 @@ public class AttendanceModel {
     private String notes;
     private long employeeId;
     private boolean isPaidLeave;
+    private List<LocalTime> checkInTimes;
+    private boolean isHalfDay;
+    private boolean isOvertime;
 }
+
