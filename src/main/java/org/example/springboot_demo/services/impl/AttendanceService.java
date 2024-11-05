@@ -51,11 +51,24 @@ public class AttendanceService implements IAttendanceService {
 
     @Override
     public AttendanceDto save(AttendanceEntity attendanceEntity) {
-        AttendanceEntity attendance = iAttendanceRepository.save(attendanceEntity);
-        int paidLeaves = iAttendanceRepository.countPaidLeaves(attendance.getStudent().getStudentId(),
-                attendance.getDate().getMonthValue(),
-                attendance.getDate().getYear());
-        return attendanceMapper.toDTO(attendance);
+        long studentId = attendanceEntity.getStudent().getStudentId();
+        int month = attendanceEntity.getDate().getMonthValue();
+        int year = attendanceEntity.getDate().getYear();
+        StudentEntity studentEntity = iStudentRepository.findById(studentId).orElse(null);
+        int paidLeaves = iAttendanceRepository.countPaidLeaves(studentId, month, year);
+        int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentId, month, year);
+        if (studentEntity != null) {
+            if (unpaidLeaves > 0) {
+                paidLeaves -= Math.min(unpaidLeaves, paidLeaves);
+            }
+            if (paidLeaves == 0) {
+                studentEntity.setUnusedPaidLeaves(studentEntity.getUnusedPaidLeaves() + 1);
+            } else {
+                studentEntity.setUnusedPaidLeaves(0);
+            }
+            iStudentRepository.save(studentEntity);
+        }
+        return attendanceMapper.toDTO(iAttendanceRepository.save(attendanceEntity));
     }
 
     @Override
@@ -109,35 +122,16 @@ public class AttendanceService implements IAttendanceService {
                 int workingDays = iAttendanceRepository.countWorkingDays(studentId, month, year);
                 int paidLeaves = iAttendanceRepository.countPaidLeaves(studentId, month, year);
                 int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentId, month, year);
-                paidLeaves += studentEntity.getUnusedPaidLeaves();
                 statisticsDtos.add(new AttendanceStatisticsDto(studentEntity.getName(), workingDays, paidLeaves, unpaidLeaves));
-                if (unpaidLeaves > 0) {
-                    paidLeaves -= Math.min(unpaidLeaves, paidLeaves);
-                }
-                if (paidLeaves == 0) {
-                    studentEntity.setUnusedPaidLeaves(studentEntity.getUnusedPaidLeaves() + 1);
-                } else {
-                    studentEntity.setUnusedPaidLeaves(0);
-                }
-                iStudentRepository.save(studentEntity);
             }
         } else {
             statisticsDtos = iStudentRepository.findAll().stream()
                     .map(studentEntity -> {
                         StudentDto studentDto = studentMapper.toDTO(studentEntity);
+
                         int workingDays = iAttendanceRepository.countWorkingDays(studentDto.getStudentId(), month, year);
                         int paidLeaves = iAttendanceRepository.countPaidLeaves(studentDto.getStudentId(), month, year);
                         int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(studentDto.getStudentId(), month, year);
-                        paidLeaves += studentEntity.getUnusedPaidLeaves();
-                        if (unpaidLeaves > 0) {
-                            paidLeaves -= Math.min(unpaidLeaves, paidLeaves);
-                        }
-                        if (paidLeaves == 0) {
-                            studentEntity.setUnusedPaidLeaves(studentEntity.getUnusedPaidLeaves() + 1);
-                        } else {
-                            studentEntity.setUnusedPaidLeaves(0);
-                        }
-                        iStudentRepository.save(studentEntity);
                         return new AttendanceStatisticsDto(studentDto.getName(), workingDays, paidLeaves, unpaidLeaves);
                     }).toList();
         }

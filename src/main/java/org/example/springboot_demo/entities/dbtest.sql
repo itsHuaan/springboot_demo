@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 04, 2024 at 05:52 PM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
+-- Generation Time: Nov 05, 2024 at 07:01 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -57,24 +57,25 @@ INSERT INTO `tbl_attendance` (`attendance_id`, `check_in`, `check_out`, `date`, 
 
 CREATE TABLE `tbl_student` (
   `student_id` bigint(20) NOT NULL,
-  `name` varchar(255) DEFAULT NULL
+  `name` varchar(255) DEFAULT NULL,
+  `unused_paid_leaves` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_vietnamese_ci;
 
 --
 -- Dumping data for table `tbl_student`
 --
 
-INSERT INTO `tbl_student` (`student_id`, `name`) VALUES
-(1, 'Nguyen Van A'),
-(2, 'Tran Thi B'),
-(3, 'Le Van C'),
-(4, 'Pham Thi D'),
-(5, 'Hoang Van E'),
-(6, 'Ngo Thi F'),
-(7, 'Vu Van G'),
-(8, 'Dang Thi H'),
-(9, 'Bui Van I'),
-(10, 'Ngo Thi J');
+INSERT INTO `tbl_student` (`student_id`, `name`, `unused_paid_leaves`) VALUES
+(1, 'Nguyen Van A', 0),
+(2, 'Tran Thi B', 0),
+(3, 'Le Van C', 0),
+(4, 'Pham Thi D', 0),
+(5, 'Hoang Van E', 0),
+(6, 'Ngo Thi F', 0),
+(7, 'Vu Van G', 0),
+(8, 'Dang Thi H', 0),
+(9, 'Bui Van I', 0),
+(10, 'Ngo Thi J', 0);
 
 --
 -- Indexes for dumped tables
