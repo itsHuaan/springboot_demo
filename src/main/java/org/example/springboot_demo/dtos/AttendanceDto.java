@@ -18,5 +18,5 @@ public class AttendanceDto {
     private LocalTime checkOut;
     private String checkOutStatus;
     private String notes;
-    private boolean isPaidLeave;
+//    private boolean isPaidLeave;
 }

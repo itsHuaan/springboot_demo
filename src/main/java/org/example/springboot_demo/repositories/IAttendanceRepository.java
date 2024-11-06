@@ -60,19 +60,14 @@ public interface IAttendanceRepository extends JpaRepository<AttendanceEntity, L
             "and a.checkOutStatus = 'leaveEarly'")
     int countLeaveEarly(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
 
-    @Query("select coalesce(sum(CURRENT_TIMESTAMP - a.checkIn), 0) " +
-            "from AttendanceEntity a " +
+    @Query("select a from AttendanceEntity a " +
             "where a.employee.employeeId = :employeeId " +
             "and month(a.date) = :month " +
             "and year(a.date) = :year " +
-            "and a.checkInStatus = 'lateArrival'")
-    long sumLateArrivalTime(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
+            "and a.checkOut = (" +
+            "   select max(a2.checkOut) from AttendanceEntity a2 " +
+            "   where a2.employee.employeeId = a.employee.employeeId " +
+            "   and a2.date = a.date)")
+    List<AttendanceEntity> findLastCheckOut(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
 
-    @Query("select coalesce(sum(CURRENT_TIMESTAMP - a.checkOut), 0) " +
-            "from AttendanceEntity a " +
-            "where a.employee.employeeId = :employeeId " +
-            "and month(a.date) = :month " +
-            "and year(a.date) = :year " +
-            "and a.checkOutStatus = 'leaveEarly'")
-    long sumEarlyLeaveTime(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
 }

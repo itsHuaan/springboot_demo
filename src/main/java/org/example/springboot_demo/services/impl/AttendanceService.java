@@ -15,6 +15,7 @@ import org.example.springboot_demo.services.IAttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -72,6 +73,11 @@ public class AttendanceService implements IAttendanceService {
                     ? attendanceEntity.getCheckIn()
                     : LocalTime.now();
             String checkInStatus = handleCheckInStatus(checkInTime);
+            attendanceEntity.setNotes(
+                    checkInStatus.equalsIgnoreCase("onTime") && checkInTime.isAfter(LocalTime.of(12, 0))
+                            ? "Half day working"
+                            : null
+            );
             handleLeaveDays(attendanceEntity, employeeId, checkInStatus);
             attendanceEntity.setCheckInStatus(checkInStatus);
         }
@@ -109,8 +115,8 @@ public class AttendanceService implements IAttendanceService {
                 int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(employeeId, month, year);
                 int lateDays = iAttendanceRepository.countLateArrivals(employeeId, month, year);
                 int leaveEarlyDays = iAttendanceRepository.countLeaveEarly(employeeId, month, year);
-                long lateArrivalTime = (iAttendanceRepository.sumLateArrivalTime(employeeId, month, year) / 1000) / 60;
-                long earlyLeavingTime = (iAttendanceRepository.sumEarlyLeaveTime(employeeId, month, year) / 1000) / 60;
+                long lateArrivalTime = sumLateArrivalTime(employeeId, month, year);
+                long earlyLeavingTime = sumEarlyLeaveTime(employeeId, month, year);
                 statisticsDtos.add(new AttendanceStatisticsDto(employeeEntity.getName(), workingDays, paidLeaves, unpaidLeaves, lateDays, leaveEarlyDays, lateArrivalTime, earlyLeavingTime));
             }
         } else {
@@ -126,8 +132,8 @@ public class AttendanceService implements IAttendanceService {
                         int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(employeeDto.getEmployeeId(), month, year);
                         int lateDays = iAttendanceRepository.countLateArrivals(employeeDto.getEmployeeId(), month, year);
                         int leaveEarlyDays = iAttendanceRepository.countLeaveEarly(employeeDto.getEmployeeId(), month, year);
-                        long lateArrivalTime = (iAttendanceRepository.sumLateArrivalTime(employeeDto.getEmployeeId(), month, year) / 1000) / 60;
-                        long earlyLeavingTime = (iAttendanceRepository.sumEarlyLeaveTime(employeeDto.getEmployeeId(), month, year) / 1000) / 60;
+                        long lateArrivalTime = sumLateArrivalTime(employeeDto.getEmployeeId(), month, year);
+                        long earlyLeavingTime = sumEarlyLeaveTime(employeeDto.getEmployeeId(), month, year);
                         return new AttendanceStatisticsDto(employeeDto.getName(), workingDays, paidLeaves, unpaidLeaves, lateDays, leaveEarlyDays, lateArrivalTime, earlyLeavingTime);
                     }).toList();
         }
@@ -171,6 +177,14 @@ public class AttendanceService implements IAttendanceService {
                 return AttendanceStatus.onTime.toString();
             } else if (checkInTime.isBefore(LocalTime.of(9, 0))) {
                 return AttendanceStatus.lateArrival.toString();
+            } else if (checkInTime.isBefore(LocalTime.of(12, 0))) {
+                return AttendanceStatus.absent.toString();
+            } else if (checkInTime.isBefore(LocalTime.of(13, 0))) {
+                return AttendanceStatus.onTime.toString();
+            } else if (checkInTime.isBefore(LocalTime.of(13, 30))) {
+                return AttendanceStatus.lateArrival.toString();
+            } else if (checkInTime.isBefore(LocalTime.of(16, 0))) {
+                return AttendanceStatus.absent.toString();
             } else {
                 return AttendanceStatus.absent.toString();
             }
@@ -180,11 +194,36 @@ public class AttendanceService implements IAttendanceService {
     }
 
     private String handleCheckOutStatus(LocalTime checkOutTime) {
-        if (checkOutTime.isBefore(LocalTime.of(17, 0))) {
-            return checkOutTime.isBefore(LocalTime.of(16, 45)) ?
-                    AttendanceStatus.leaveEarly.toString() : AttendanceStatus.onTime.toString();
+        if (checkOutTime != null) {
+            if (checkOutTime.isBefore(LocalTime.of(16, 45))) {
+                return AttendanceStatus.leaveEarly.toString();
+            } else {
+                return AttendanceStatus.onTime.toString();
+            }
         } else {
             return null;
         }
+    }
+
+    private long sumLateArrivalTime(Long employeeId, int month, int year) {
+        return iAttendanceRepository.findLastCheckOut(employeeId, month, year).stream()
+                .filter(attendance -> attendance.getCheckIn() != null)
+                .mapToLong(attendance -> {
+                    LocalTime checkIn = attendance.getCheckIn();
+                    return checkIn.isAfter(LocalTime.of(8, 30)) && checkIn.isBefore(LocalTime.of(9, 0))
+                            ? Duration.between(LocalTime.of(8, 30), checkIn).toMinutes()
+                            : 0;
+                }).sum();
+    }
+
+    private long sumEarlyLeaveTime(Long employeeId, int month, int year) {
+        return iAttendanceRepository.findLastCheckOut(employeeId, month, year).stream()
+                .filter(attendance -> attendance.getCheckOut() != null)
+                .mapToLong(attendance -> {
+                    LocalTime checkOut = attendance.getCheckOut();
+                    return attendance.getCheckOutStatus().equalsIgnoreCase("leaveEarly") && checkOut.isBefore(LocalTime.of(17, 0))
+                            ? Duration.between(checkOut, LocalTime.of(17, 0)).toMinutes()
+                            : 0;
+                }).sum();
     }
 }

@@ -19,7 +19,7 @@ public class AttendanceMapper implements IBaseMapper<AttendanceDto, AttendanceMo
                 .checkOutStatus(attendanceEntity.getCheckOutStatus())
                 .date(attendanceEntity.getDate())
                 .notes(attendanceEntity.getNotes())
-                .isPaidLeave(attendanceEntity.isPaidLeave())
+//                .isPaidLeave(attendanceEntity.isPaidLeave())
                 .build();
     }
 
