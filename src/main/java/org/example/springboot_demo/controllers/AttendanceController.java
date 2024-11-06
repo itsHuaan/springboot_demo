@@ -1,6 +1,7 @@
 package org.example.springboot_demo.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import org.example.springboot_demo.dtos.AttendanceDto;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
 import org.example.springboot_demo.models.AttendanceModel;
 import org.example.springboot_demo.models.AttendanceStatus;
@@ -16,8 +17,6 @@ import java.time.LocalTime;
 @RestController
 @RequestMapping("api/attendance/v1")
 public class AttendanceController {
-    private final LocalTime defaultCheckIn = LocalTime.of(8, 0, 0);
-
     private final AttendanceService attendanceService;
     private final AttendanceMapper mapper;
 
@@ -36,38 +35,18 @@ public class AttendanceController {
                 : ResponseEntity.ok(attendanceService.getAttendanceGroupByDate());
     }
 
-    @Operation(summary = "Checking In")
-    @PostMapping("checkin")
+    @Operation(summary = "Save Attendance (Check-in or Check-out)")
+    @PostMapping("save")
     public ResponseEntity<?> checkIn(@RequestBody AttendanceModel attendanceModel) {
-        attendanceModel.setCheckIn(LocalTime.now());
-        String checkInStatus = "";
-        LocalTime late = defaultCheckIn.plusMinutes(30);
-        LocalTime absent = defaultCheckIn.plusHours(1);
-        if (attendanceModel.getCheckIn().isAfter(absent)) {
-            checkInStatus += AttendanceStatus.absent.toString();
-            attendanceModel.setPaidLeave(attendanceService.canGrantPaidLeave(
-                    attendanceModel.getEmployeeId(),
-                    attendanceModel.getDate().getMonthValue(),
-                    attendanceModel.getDate().getYear()
-            ));
-        } else if (attendanceModel.getCheckIn().isAfter(late)) {
-            checkInStatus += AttendanceStatus.lateArrival.toString();
-            attendanceModel.setPaidLeave(false);
-        } else {
-            checkInStatus += AttendanceStatus.onTime.toString();
-            attendanceModel.setPaidLeave(false);
-        }
-        attendanceModel.setCheckInStatus(checkInStatus);
-        return attendanceService.save(mapper.toEntity(attendanceModel)) != null
-                ? new ResponseEntity<>(attendanceModel, HttpStatus.CREATED)
-                : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-
-    @Operation(summary = "Checking Out")
-    @PutMapping("checkout")
-    public ResponseEntity<?> checkOut(@RequestBody AttendanceModel attendanceModel) {
-        return attendanceService.checkingOut(mapper.toEntity(attendanceModel)) != null
-                ? new ResponseEntity<>(attendanceModel, HttpStatus.OK)
+        attendanceModel.setDate(attendanceModel.getDate() != null
+                ? attendanceModel.getDate()
+                : LocalDate.now());
+        attendanceModel.setCheckIn(attendanceModel.getCheckIn() != null
+                ? attendanceModel.getCheckIn()
+                : LocalTime.now());
+        AttendanceDto result = attendanceService.save(mapper.toEntity(attendanceModel));
+        return result != null
+                ? new ResponseEntity<>(result, HttpStatus.CREATED)
                 : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 

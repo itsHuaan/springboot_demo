@@ -10,5 +10,5 @@ import lombok.*;
 public class EmployeeModel {
     private long employeeId;
     private String name;
-    private int unusedPaidLeaves = 0;
+    private int unusedPaidLeaves = 1;
 }

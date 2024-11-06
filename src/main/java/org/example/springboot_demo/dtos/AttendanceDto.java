@@ -11,7 +11,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @Builder
 public class AttendanceDto {
-    private String student;
+    private String employee;
     private LocalDate date;
     private LocalTime checkIn;
     private String checkInStatus;

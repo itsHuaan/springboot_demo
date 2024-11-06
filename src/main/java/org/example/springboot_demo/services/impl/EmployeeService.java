@@ -4,7 +4,7 @@ import org.example.springboot_demo.dtos.EmployeeDto;
 import org.example.springboot_demo.entities.EmployeeEntity;
 import org.example.springboot_demo.mappers.impl.EmployeeMapper;
 import org.example.springboot_demo.repositories.IEmployeeRepository;
-import org.example.springboot_demo.services.IStudentService;
+import org.example.springboot_demo.services.IEmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
-public class EmployeeService implements IStudentService {
+public class EmployeeService implements IEmployeeService {
 
     private final IEmployeeRepository iEmployeeRepository;
     private final EmployeeMapper mapper;

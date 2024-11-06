@@ -10,7 +10,7 @@ import java.time.*;
 @AllArgsConstructor
 @Builder
 public class AttendanceModel {
-    private LocalDate date = LocalDate.now();
+    private LocalDate date;
     private LocalTime checkIn;
     private String checkInStatus;
     private LocalTime checkOut;

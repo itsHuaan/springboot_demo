@@ -17,7 +17,7 @@ public class EmployeeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long employeeId;
     private String name;
-    private int unusedPaidLeaves = 0;
+    private int unusedPaidLeaves = 1;
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<AttendanceEntity> attendanceList;
 }

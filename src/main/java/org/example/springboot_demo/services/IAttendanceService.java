@@ -10,7 +10,6 @@ import java.util.List;
 
 public interface IAttendanceService extends IBaseService<AttendanceDto, AttendanceEntity, Long> {
     List<AttendanceDto> getByDate(LocalDate date);
-    AttendanceDto checkingOut(AttendanceEntity attendance);
     boolean canGrantPaidLeave(Long employeeId, int month, int year);
     List<AttendanceStatisticsDto> getStatistics(Long employeeId, int month, int year);
     List<AttendanceByDate> getAttendanceGroupByDate();

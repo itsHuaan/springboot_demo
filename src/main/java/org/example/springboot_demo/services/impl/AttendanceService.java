@@ -52,56 +52,32 @@ public class AttendanceService implements IAttendanceService {
     @Override
     public AttendanceDto save(AttendanceEntity attendanceEntity) {
         long employeeId = attendanceEntity.getEmployee().getEmployeeId();
-        int month = attendanceEntity.getDate().getMonthValue();
-        int year = attendanceEntity.getDate().getYear();
-        EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
-        int paidLeaves = iAttendanceRepository.countPaidLeaves(employeeId, month, year);
-        int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(employeeId, month, year);
+        LocalDate date = attendanceEntity.getDate();
 
-        LocalTime checkInTime = attendanceEntity.getCheckIn();
-        String checkInStatus = null;
+        Optional<AttendanceEntity> existingRecord = iAttendanceRepository.findFirstByEmployee_EmployeeIdAndDate(employeeId, date);
+        if (existingRecord.isPresent()) {
+            AttendanceEntity firstRecord = existingRecord.get();
+            attendanceEntity.setCheckIn(firstRecord.getCheckIn());
+            attendanceEntity.setCheckInStatus(firstRecord.getCheckInStatus());
+            attendanceEntity.setPaidLeave(firstRecord.isPaidLeave());
 
-        if (checkInTime != null) {
-            if (checkInTime.isBefore(LocalTime.of(8, 30))) {
-                checkInStatus = AttendanceStatus.onTime.toString();
-            } else if (checkInTime.isBefore(LocalTime.of(9, 0))) {
-                checkInStatus = AttendanceStatus.lateArrival.toString();
-            } else if (checkInTime.isAfter(LocalTime.of(9, 0))) {
-                checkInStatus = AttendanceStatus.absent.toString();
-            }
+            LocalTime checkOutTime = attendanceEntity.getCheckOut() != null
+                    ? attendanceEntity.getCheckOut()
+                    : LocalTime.now();
+            String checkOutStatus = handleCheckOutStatus(checkOutTime);
+            attendanceEntity.setCheckOut(checkOutTime);
+            attendanceEntity.setCheckOutStatus(checkOutStatus);
         } else {
-            checkInStatus = AttendanceStatus.absent.toString();
+            LocalTime checkInTime = attendanceEntity.getCheckIn() != null
+                    ? attendanceEntity.getCheckIn()
+                    : LocalTime.now();
+            String checkInStatus = handleCheckInStatus(checkInTime);
+            handleLeaveDays(attendanceEntity, employeeId, checkInStatus);
+            attendanceEntity.setCheckInStatus(checkInStatus);
         }
-        attendanceEntity.setCheckInStatus(checkInStatus);
 
-        LocalTime checkOutTime = attendanceEntity.getCheckOut();
-        String checkOutStatus = null;
-
-        if (checkOutTime != null) {
-            if (checkOutTime.isBefore(LocalTime.of(17, 0))) {
-                if (checkOutTime.isBefore(LocalTime.of(16, 45))) {
-                    checkOutStatus = AttendanceStatus.leaveEarly.toString();
-                } else {
-                    checkOutStatus = AttendanceStatus.onTime.toString();
-                }
-            }
-        }
-        attendanceEntity.setCheckOutStatus(checkOutStatus);
-
-        if (employeeEntity != null) {
-            if (unpaidLeaves > 0) {
-                paidLeaves -= Math.min(unpaidLeaves, paidLeaves);
-            }
-            if (paidLeaves == 0) {
-                employeeEntity.setUnusedPaidLeaves(employeeEntity.getUnusedPaidLeaves() + 1);
-            } else {
-                employeeEntity.setUnusedPaidLeaves(0);
-            }
-            iEmployeeRepository.save(employeeEntity);
-        }
         return attendanceMapper.toDTO(iAttendanceRepository.save(attendanceEntity));
     }
-
 
     @Override
     public int delete(Long aLong) {
@@ -111,33 +87,6 @@ public class AttendanceService implements IAttendanceService {
     @Override
     public List<AttendanceDto> getByDate(LocalDate date) {
         return iAttendanceRepository.findByDate(date).stream().map(attendanceMapper::toDTO).toList();
-    }
-
-    @Override
-    public AttendanceDto checkingOut(AttendanceEntity attendance) {
-        LocalTime defaultCheckOut = LocalTime.of(17, 30, 0);
-        Optional<AttendanceEntity> currentAttendanceOpt = iAttendanceRepository.findByEmployee_EmployeeIdAndDate(attendance.getEmployee().getEmployeeId(), attendance.getDate());
-        if (currentAttendanceOpt.isPresent()) {
-            AttendanceEntity currentAttendance = currentAttendanceOpt.get();
-            currentAttendance.setCheckOut(LocalTime.now());
-
-            String checkOutStatus = currentAttendance.getCheckOutStatus() != null
-                    ? currentAttendance.getCheckOutStatus()
-                    : "";
-            if (currentAttendance.getCheckOut().isBefore(defaultCheckOut)) {
-                checkOutStatus += AttendanceStatus.leaveEarly.toString();
-            }
-            if ("absent".equalsIgnoreCase(currentAttendance.getCheckOutStatus())) {
-                currentAttendance.setPaidLeave(canGrantPaidLeave(
-                        currentAttendance.getEmployee().getEmployeeId(),
-                        currentAttendance.getDate().getMonthValue(),
-                        currentAttendance.getDate().getYear()
-                ));
-            }
-            currentAttendance.setCheckOutStatus(checkOutStatus);
-            return attendanceMapper.toDTO(iAttendanceRepository.save(currentAttendance));
-        }
-        return null;
     }
 
     @Override
@@ -151,19 +100,35 @@ public class AttendanceService implements IAttendanceService {
         if (employeeId != null) {
             EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
             if (employeeEntity != null) {
-                int workingDays = iAttendanceRepository.countWorkingDays(employeeId, month, year);
+                LocalDate currentDate = LocalDate.now();
+                LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+                int totalDays = (int) firstDayOfMonth.datesUntil(currentDate.plusDays(1)).count();
+                int workingDays = totalDays - (iAttendanceRepository.countPaidLeaves(employeeId, month, year)
+                        + iAttendanceRepository.countUnpaidLeaves(employeeId, month, year));
                 int paidLeaves = iAttendanceRepository.countPaidLeaves(employeeId, month, year);
                 int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(employeeId, month, year);
-                statisticsDtos.add(new AttendanceStatisticsDto(employeeEntity.getName(), workingDays, paidLeaves, unpaidLeaves));
+                int lateDays = iAttendanceRepository.countLateArrivals(employeeId, month, year);
+                int leaveEarlyDays = iAttendanceRepository.countLeaveEarly(employeeId, month, year);
+                long lateArrivalTime = (iAttendanceRepository.sumLateArrivalTime(employeeId, month, year) / 1000) / 60;
+                long earlyLeavingTime = (iAttendanceRepository.sumEarlyLeaveTime(employeeId, month, year) / 1000) / 60;
+                statisticsDtos.add(new AttendanceStatisticsDto(employeeEntity.getName(), workingDays, paidLeaves, unpaidLeaves, lateDays, leaveEarlyDays, lateArrivalTime, earlyLeavingTime));
             }
         } else {
             statisticsDtos = iEmployeeRepository.findAll().stream()
-                    .map(studentEntity -> {
-                        EmployeeDto employeeDto = employeeMapper.toDTO(studentEntity);
-                        int workingDays = iAttendanceRepository.countWorkingDays(employeeDto.getEmployeeId(), month, year);
+                    .map(employeeEntity -> {
+                        EmployeeDto employeeDto = employeeMapper.toDTO(employeeEntity);
+                        LocalDate currentDate = LocalDate.now();
+                        LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+                        int totalDays = (int) firstDayOfMonth.datesUntil(currentDate.plusDays(1)).count();
+                        int workingDays = totalDays - (iAttendanceRepository.countPaidLeaves(employeeDto.getEmployeeId(), month, year)
+                                + iAttendanceRepository.countUnpaidLeaves(employeeDto.getEmployeeId(), month, year));
                         int paidLeaves = iAttendanceRepository.countPaidLeaves(employeeDto.getEmployeeId(), month, year);
                         int unpaidLeaves = iAttendanceRepository.countUnpaidLeaves(employeeDto.getEmployeeId(), month, year);
-                        return new AttendanceStatisticsDto(employeeDto.getName(), workingDays, paidLeaves, unpaidLeaves);
+                        int lateDays = iAttendanceRepository.countLateArrivals(employeeDto.getEmployeeId(), month, year);
+                        int leaveEarlyDays = iAttendanceRepository.countLeaveEarly(employeeDto.getEmployeeId(), month, year);
+                        long lateArrivalTime = (iAttendanceRepository.sumLateArrivalTime(employeeDto.getEmployeeId(), month, year) / 1000) / 60;
+                        long earlyLeavingTime = (iAttendanceRepository.sumEarlyLeaveTime(employeeDto.getEmployeeId(), month, year) / 1000) / 60;
+                        return new AttendanceStatisticsDto(employeeDto.getName(), workingDays, paidLeaves, unpaidLeaves, lateDays, leaveEarlyDays, lateArrivalTime, earlyLeavingTime);
                     }).toList();
         }
         return statisticsDtos;
@@ -171,7 +136,7 @@ public class AttendanceService implements IAttendanceService {
 
     @Override
     public List<AttendanceByDate> getAttendanceGroupByDate() {
-        List<AttendanceEntity> entities = iAttendanceRepository.findAll();
+        List<AttendanceEntity> entities = iAttendanceRepository.findLastRecordByCheckOut();
         Map<LocalDate, List<AttendanceDto>> attendanceByDate = entities.stream()
                 .collect(Collectors.groupingBy(
                         AttendanceEntity::getDate,
@@ -181,6 +146,45 @@ public class AttendanceService implements IAttendanceService {
                 .map(entry -> AttendanceByDate.builder()
                         .date(entry.getKey())
                         .attendances(entry.getValue())
-                        .build()).toList();
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    private void handleLeaveDays(AttendanceEntity attendanceEntity, long employeeId, String checkInStatus) {
+        EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
+        if (employeeEntity != null) {
+            if (checkInStatus.equalsIgnoreCase(AttendanceStatus.absent.toString())) {
+                if (employeeEntity.getUnusedPaidLeaves() > 0) {
+                    attendanceEntity.setPaidLeave(true);
+                    employeeEntity.setUnusedPaidLeaves(employeeEntity.getUnusedPaidLeaves() - 1);
+                    iEmployeeRepository.save(employeeEntity);
+                } else {
+                    attendanceEntity.setPaidLeave(false);
+                }
+            }
+        }
+    }
+
+    private String handleCheckInStatus(LocalTime checkInTime) {
+        if (checkInTime != null) {
+            if (checkInTime.isBefore(LocalTime.of(8, 30))) {
+                return AttendanceStatus.onTime.toString();
+            } else if (checkInTime.isBefore(LocalTime.of(9, 0))) {
+                return AttendanceStatus.lateArrival.toString();
+            } else {
+                return AttendanceStatus.absent.toString();
+            }
+        } else {
+            return AttendanceStatus.absent.toString();
+        }
+    }
+
+    private String handleCheckOutStatus(LocalTime checkOutTime) {
+        if (checkOutTime.isBefore(LocalTime.of(17, 0))) {
+            return checkOutTime.isBefore(LocalTime.of(16, 45)) ?
+                    AttendanceStatus.leaveEarly.toString() : AttendanceStatus.onTime.toString();
+        } else {
+            return null;
+        }
     }
 }

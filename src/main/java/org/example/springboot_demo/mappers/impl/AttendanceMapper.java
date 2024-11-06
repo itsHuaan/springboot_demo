@@ -12,7 +12,7 @@ public class AttendanceMapper implements IBaseMapper<AttendanceDto, AttendanceMo
     @Override
     public AttendanceDto toDTO(AttendanceEntity attendanceEntity) {
         return AttendanceDto.builder()
-                .student(attendanceEntity.getEmployee().getName())
+                .employee(attendanceEntity.getEmployee().getName())
                 .checkIn(attendanceEntity.getCheckIn())
                 .checkInStatus(attendanceEntity.getCheckInStatus())
                 .checkOut(attendanceEntity.getCheckOut())
