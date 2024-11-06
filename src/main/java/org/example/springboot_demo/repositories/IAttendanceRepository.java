@@ -19,6 +19,7 @@ public interface IAttendanceRepository extends JpaRepository<AttendanceEntity, L
     List<AttendanceEntity> findByDate(LocalDate date);
 
     Optional<AttendanceEntity> findFirstByEmployee_EmployeeIdAndDate(long employee_employeeId, LocalDate date);
+
     @Query("select a from AttendanceEntity a " +
             "where a.checkOut = (" +
             "select max (a2.checkOut) from AttendanceEntity a2 " +
@@ -26,48 +27,13 @@ public interface IAttendanceRepository extends JpaRepository<AttendanceEntity, L
             "and a2.date = a.date)")
     List<AttendanceEntity> findLastRecordByCheckOut();
 
-    @Query("select count(distinct a.date) " +
-            "from AttendanceEntity a " +
-            "where a.employee.employeeId = :employeeId " +
-            "and month(a.date) = :month " +
-            "and year(a.date) = :year " +
-            "and a.checkInStatus = 'absent'" +
-            "and a.isPaidLeave = true")
-    int countPaidLeaves(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
-
-    @Query("select count(distinct a.date) " +
-            "from AttendanceEntity a " +
-            "where a.employee.employeeId = :employeeId " +
-            "and month(a.date) = :month " +
-            "and year(a.date) = :year " +
-            "and a.checkInStatus = 'absent'" +
-            "and a.isPaidLeave = false")
-    int countUnpaidLeaves(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
-
-    @Query("select count(distinct a.date) " +
-            "from AttendanceEntity a " +
-            "where a.employee.employeeId = :employeeId " +
-            "and month(a.date) = :month " +
-            "and year(a.date) = :year " +
-            "and a.checkInStatus = 'lateArrival'")
-    int countLateArrivals(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
-
-    @Query("select count(distinct a.date) " +
-            "from AttendanceEntity a " +
-            "where a.employee.employeeId = :employeeId " +
-            "and month(a.date) = :month " +
-            "and year(a.date) = :year " +
-            "and a.checkOutStatus = 'leaveEarly'")
-    int countLeaveEarly(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
-
     @Query("select a from AttendanceEntity a " +
             "where a.employee.employeeId = :employeeId " +
             "and month(a.date) = :month " +
             "and year(a.date) = :year " +
             "and a.checkOut = (" +
-            "   select max(a2.checkOut) from AttendanceEntity a2 " +
-            "   where a2.employee.employeeId = a.employee.employeeId " +
-            "   and a2.date = a.date)")
-    List<AttendanceEntity> findLastCheckOut(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
-
+            "select max(a2.checkOut) from AttendanceEntity a2 " +
+            "where a2.employee.employeeId = a.employee.employeeId " +
+            "and a2.date = a.date)")
+    List<AttendanceEntity> findDistinctAttendances(@Param("employeeId") Long employeeId, @Param("month") int month, @Param("year") int year);
 }
