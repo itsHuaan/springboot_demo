@@ -167,7 +167,7 @@ public class AttendanceService implements IAttendanceService {
 
     @Override
     public List<AttendanceByDate> getAttendanceGroupByDate() {
-        List<AttendanceEntity> entities = iAttendanceRepository.findLastRecordByCheckOut();
+        List<AttendanceEntity> entities = iAttendanceRepository.findLastCheckOutRecord();
         Map<LocalDate, List<AttendanceDto>> attendanceByDate = entities.stream()
                 .collect(Collectors.groupingBy(
                         AttendanceEntity::getDate,
@@ -348,4 +348,5 @@ public class AttendanceService implements IAttendanceService {
                             : 0;
                 }).sum();
     }
+
 }

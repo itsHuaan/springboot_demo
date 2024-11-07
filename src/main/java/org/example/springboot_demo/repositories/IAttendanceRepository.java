@@ -25,7 +25,7 @@ public interface IAttendanceRepository extends JpaRepository<AttendanceEntity, L
             "select max (a2.checkOut) from AttendanceEntity a2 " +
             "where a2.employee.employeeId = a.employee.employeeId " +
             "and a2.date = a.date)")
-    List<AttendanceEntity> findLastRecordByCheckOut();
+    List<AttendanceEntity> findLastCheckOutRecord();
 
     @Query("select a from AttendanceEntity a " +
             "where a.employee.employeeId = :employeeId " +
