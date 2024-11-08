@@ -22,6 +22,7 @@ public class AttendanceStatisticsDto {
 private Map<LocalDate, Long> lateDayList;
     private int leaveEarlyDays;
     private Map<LocalDate, Long> leaveEarlyDayList;
+    private Map<LocalDate, Long> frequencyOfCheckingOut;
     private long sumLateArrivalTime;
     private long sumEarlyLeavingTime;
 }

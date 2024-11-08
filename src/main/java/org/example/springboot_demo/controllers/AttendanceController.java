@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.example.springboot_demo.dtos.AttendanceDto;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
 import org.example.springboot_demo.models.AttendanceModel;
-import org.example.springboot_demo.models.AttendanceStatus;
 import org.example.springboot_demo.services.impl.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,7 +28,12 @@ public class AttendanceController {
 
     @Operation(summary = "Get All Attendances")
     @GetMapping
-    public ResponseEntity<?> getAttendance(@RequestParam(required = false) LocalDate date) {
+    public ResponseEntity<?> getAttendance(@RequestParam(required = false) Integer day,
+                                           @RequestParam(required = false) Integer month,
+                                           @RequestParam(required = false) Integer year) {
+        LocalDate date = day != null && month != null && year != null
+                ? LocalDate.of(year, month, day)
+                : null;
         return date != null
                 ? ResponseEntity.ok(attendanceService.getByDate(date))
                 : ResponseEntity.ok(attendanceService.getAttendanceGroupByDate());

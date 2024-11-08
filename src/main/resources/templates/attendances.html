@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendances Management</title>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/bootstrap.css">
+
+    <link rel="stylesheet" href="/vendors/simple-datatables/style.css">
+
+    <link rel="stylesheet" href="/vendors/perfect-scrollbar/perfect-scrollbar.css">
+    <link rel="stylesheet" href="/vendors/bootstrap-icons/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/app.css">
+    <link rel="shortcut icon" href="/images/favicon.svg" type="image/x-icon">
+</head>
+
+<body>
+<div id="app">
+    <div th:insert="~{components/sidebar.html}"></div>
+    <div id="main">
+        <header class="mb-3">
+            <a href="#" class="burger-btn d-block d-xl-none">
+                <i class="bi bi-justify fs-3"></i>
+            </a>
+        </header>
+
+        <div class="page-heading">
+            <div class="page-title">
+                <div class="row">
+                    <div class="col-12 col-md-6 order-md-1 order-last">
+                        <h3>Attendances Management</h3>
+                    </div>
+                    <div class="col-12 col-md-6 order-md-2 order-first">
+                        <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Attendances</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <section class="section">
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-hover" id="table1">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Check-in</th>
+                                <th>Check-in Status</th>
+                                <th>Check-out</th>
+                                <th>Check-out Status</th>
+                                <th>Notes</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="attendance : ${attendances}">
+                                <td>
+                                    <span th:text="${attendance.employee}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${attendance.checkIn}"></span>
+                                </td>
+                                <td>
+  <span class="badge rounded-pill"
+        th:classappend="${attendance.checkInStatus == 'onTime' ? 'bg-success' :
+                        (attendance.checkInStatus == 'lateArrival' ? 'bg-secondary' :
+                        (attendance.checkInStatus == 'absent' ? 'bg-danger' : ''))}"
+        th:text="${attendance.checkInStatus == 'onTime' ? 'On Time' :
+                        (attendance.checkInStatus == 'lateArrival' ? 'Late Arrival' :
+                        (attendance.checkInStatus == 'absent' ? 'Absent' : ''))}">
+  </span>
+                                </td>
+                                <td>
+                                    <span th:text="${attendance.checkOut}"></span>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill"
+                                          th:classappend="${attendance.checkOutStatus == 'onTime' ? 'bg-success' :
+                        (attendance.checkOutStatus == 'leaveEarly' ? 'bg-warning' : '')}"
+                                          th:text="${attendance.checkOutStatus == 'onTime' ? 'On Time' :
+                        (attendance.checkOutStatus == 'leaveEarly' ? 'Leave Early' : '')}">
+  </span>
+                                </td>
+                                <td>
+                                    <span th:text="${attendance.notes}"></span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+
+        <div th:insert="~{components/footer.html}"></div>
+    </div>
+</div>
+<script src="/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
+
+<script src="/vendors/simple-datatables/simple-datatables.js"></script>
+<script>
+    let table1 = document.querySelector('#table1');
+    let dataTable = new simpleDatatables.DataTable(table1);
+</script>
+
+<script src="/js/main.js"></script>
+</body>
+
+</html>
