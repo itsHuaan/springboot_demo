@@ -34,9 +34,9 @@ public class HomeController {
         this.employeeMapper = employeeMapper;
     }
 
-    @RequestMapping("homepage")
+    @RequestMapping("/")
     public String homePage(Model model) {
-        model.addAttribute("currentPath", "/homepage");
+        model.addAttribute("currentPath", "/dashboard");
         return "index";
     }
 

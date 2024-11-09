@@ -26,17 +26,25 @@ public class AttendanceController {
         this.mapper = mapper;
     }
 
-    @Operation(summary = "Get All Attendances")
+    @Operation(summary = "Get Attendances")
     @GetMapping
-    public ResponseEntity<?> getAttendance(@RequestParam(required = false) Integer day,
+    public ResponseEntity<?> getAttendance(@RequestParam(required = false) Long employeeId,
+                                           @RequestParam(required = false) Integer day,
                                            @RequestParam(required = false) Integer month,
                                            @RequestParam(required = false) Integer year) {
         LocalDate date = day != null && month != null && year != null
                 ? LocalDate.of(year, month, day)
                 : null;
-        return date != null
-                ? ResponseEntity.ok(attendanceService.getByDate(date))
-                : ResponseEntity.ok(attendanceService.getAttendanceGroupByDate());
+
+        if (employeeId != null && date != null) {
+            return ResponseEntity.ok(attendanceService.getByEmployeeIdAndDate(employeeId, date));
+        } else if (employeeId != null) {
+            return ResponseEntity.ok(attendanceService.getByEmployeeId(employeeId));
+        } else if (date != null) {
+            return ResponseEntity.ok(attendanceService.getByDate(date));
+        } else {
+            return ResponseEntity.ok(attendanceService.getAttendanceGroupByDate());
+        }
     }
 
     @Operation(summary = "Save Attendance (Check-in or Check-out)")
