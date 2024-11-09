@@ -41,9 +41,9 @@ public class HomeController {
     }
 
     @GetMapping("attendances")
-    public String attendancesPage(Model model, @RequestParam(required = false) LocalDate date) {
-        LocalDate dateAttendance = date != null ? date : LocalDate.now();
-        List<AttendanceDto> attendances = attendanceService.getByDate(dateAttendance);
+    public String attendancesPage(Model model) {
+        model.addAttribute("employees", employeeService.findAll());
+        List<AttendanceDto> attendances =  attendanceService.getByDate(LocalDate.now());
         model.addAttribute("attendances", attendances);
         model.addAttribute("currentPath", "/attendances");
         return "attendances";

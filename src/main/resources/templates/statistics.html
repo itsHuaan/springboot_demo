@@ -33,28 +33,7 @@
       <section class="section">
         <div class="card">
           <div class="card-body">
-            <table class="table table-hover" id="table1">
-              <thead>
-              <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Paid Days off left</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr th:each="employee : ${employees}">
-                <td>
-                  <span th:text="${employee.employeeId}"></span>
-                </td>
-                <td>
-                  <span th:text="${employee.name}"></span>
-                </td>
-                <td>
-                  <span th:text="${employee.unusedPaidLeaves} + ' days'"></span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
+
           </div>
         </div>
 

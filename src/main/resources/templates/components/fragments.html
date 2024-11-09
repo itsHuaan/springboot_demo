@@ -8,13 +8,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/bootstrap.css">
-
     <link rel="stylesheet" href="/vendors/iconly/bold.css">
-
+    <link rel="stylesheet" href="/vendors/simple-datatables/style.css">
     <link rel="stylesheet" href="/vendors/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/app.css">
     <link rel="shortcut icon" href="/images/favicon.svg" type="image/x-icon">
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="/css/table-datatable-jquery.css">
+    <link rel="stylesheet" href="/vendors/flatpickr/flatpickr.min.css">
 </head>
 
 <body>
@@ -42,12 +44,30 @@
                         </a>
                     </li>
 
-                    <li class="sidebar-item" th:classappend="${currentPath == '/attendances'} ? 'active'">
-                        <a href="/attendances" class="sidebar-link">
+                    <li class="sidebar-item  has-sub">
+                        <a href="#" class='sidebar-link'>
                             <i class="bi bi-table"></i>
                             <span>Attendances</span>
                         </a>
+                        <ul class="submenu ">
+                            <li class="submenu-item" th:classappend="${currentPath == '/attendances'} ? 'active'">
+                                <a href="/attendances">Attendances Tracking</a>
+                            </li>
+                            <li class="submenu-item ">
+                                <a href="#">OT Registration</a>
+                            </li>
+                            <li class="submenu-item ">
+                                <a href="#">Leave Request</a>
+                            </li>
+                        </ul>
                     </li>
+
+<!--                    <li class="sidebar-item" th:classappend="${currentPath == '/attendances'} ? 'active'">-->
+<!--                        <a href="/attendances" class="sidebar-link">-->
+<!--                            <i class="bi bi-table"></i>-->
+<!--                            <span>Attendances</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
 
                     <li class="sidebar-item" th:classappend="${currentPath == '/employees'} ? 'active'">
                         <a href="/employees" class="sidebar-link">
@@ -84,8 +104,14 @@
     </div>
 </div>
 <div th:fragment="js-libraries">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/vendors/flatpickr/flatpickr.min.js"></script>
+    <script src="/js/date-picker.js"></script>
     <script src="/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="/js/datatables.js"></script>
     <script src="/vendors/simple-datatables/simple-datatables.js"></script>
     <script src="/vendors/apexcharts/apexcharts.js"></script>
     <script src="/js/pages/dashboard.js"></script>

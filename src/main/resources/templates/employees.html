@@ -32,32 +32,38 @@
             </div>
             <section class="section">
                 <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            Attendances
+                        </h5>
+                    </div>
                     <div class="card-body">
-                        <table class="table table-hover" id="table1">
-                            <thead>
-                            <tr>
-                                <th>Id</th>
-                                <th>Name</th>
-                                <th>Paid Days off left</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="employee : ${employees}">
-                                <td>
-                                    <span th:text="${employee.employeeId}"></span>
-                                </td>
-                                <td>
-                                    <span th:text="${employee.name}"></span>
-                                </td>
-                                <td>
-                                    <span th:text="${employee.unusedPaidLeaves} + ' days'"></span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="table1">
+                                <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Name</th>
+                                    <th>Paid Days off left</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="employee : ${employees}">
+                                    <td>
+                                        <span th:text="${employee.employeeId}"></span>
+                                    </td>
+                                    <td>
+                                        <span th:text="${employee.name}"></span>
+                                    </td>
+                                    <td>
+                                        <span th:text="${employee.unusedPaidLeaves} + ' days'"></span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-
             </section>
         </div>
 
@@ -65,10 +71,6 @@
     </div>
 </div>
 <div th:replace="~{components/fragments :: js-libraries}"></div>
-<script>
-    let table1 = document.querySelector('#table1');
-    let dataTable = new simpleDatatables.DataTable(table1);
-</script>
 </body>
 
 </html>
