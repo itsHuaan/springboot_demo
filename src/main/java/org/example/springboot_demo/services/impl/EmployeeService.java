@@ -15,28 +15,28 @@ import java.util.Objects;
 public class EmployeeService implements IEmployeeService {
 
     private final IEmployeeRepository iEmployeeRepository;
-    private final EmployeeMapper mapper;
+    private final EmployeeMapper employeeMapper;
 
     @Autowired
     public EmployeeService(IEmployeeRepository iEmployeeRepository,
-                           EmployeeMapper mapper) {
+                           EmployeeMapper employeeMapper) {
         this.iEmployeeRepository = iEmployeeRepository;
-        this.mapper = mapper;
+        this.employeeMapper = employeeMapper;
     }
 
     @Override
     public List<EmployeeDto> findAll() {
-        return iEmployeeRepository.findAll().stream().map(mapper::toDTO).toList();
+        return iEmployeeRepository.findAll().stream().map(employeeMapper::toDTO).toList();
     }
 
     @Override
     public EmployeeDto findById(Long id) {
-        return mapper.toDTO(Objects.requireNonNull(iEmployeeRepository.findById(id).orElse(null)));
+        return employeeMapper.toDTO(Objects.requireNonNull(iEmployeeRepository.findById(id).orElse(null)));
     }
 
     @Override
     public EmployeeDto save(EmployeeEntity employeeEntity) {
-        return mapper.toDTO(iEmployeeRepository.save(employeeEntity));
+        return employeeMapper.toDTO(iEmployeeRepository.save(employeeEntity));
     }
 
     @Override

@@ -32,7 +32,6 @@ public class AttendanceService implements IAttendanceService {
     private final IEmployeeRepository iEmployeeRepository;
     private final AttendanceMapper attendanceMapper;
     private final EmployeeMapper employeeMapper;
-    private Specification<AttendanceEntity> specification = null;
 
     @Autowired
     public AttendanceService(final IAttendanceRepository iAttendanceRepository,
@@ -102,7 +101,7 @@ public class AttendanceService implements IAttendanceService {
 
     @Override
     public boolean canGrantPaidLeave(Long employeeId, int month, int year) {
-        specification = Specification
+        Specification<AttendanceEntity> specification = Specification
                 .where(AttendanceSpecifications.hasEmployeeId(employeeId))
                 .and(AttendanceSpecifications.hasMonth(month))
                 .and(AttendanceSpecifications.hasYear(year))
@@ -111,83 +110,53 @@ public class AttendanceService implements IAttendanceService {
     }
 
     @Override
-    public List<AttendanceStatisticsDto> getStatistics(Long employeeId, int month, int year) {
+    public List<AttendanceStatisticsDto> getStatistics(Long employeeId, Integer month, Integer year) {
         List<AttendanceStatisticsDto> statistics = new ArrayList<>();
         if (employeeId != null) {
             EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
             if (employeeEntity != null) {
-                specification = Specification
-                        .where(hasEmployeeId(employeeId))
-                        .and(hasMonth(month))
-                        .and(hasYear(year))
-                        .and(hasLatestCheckOut());
-                int workingDays = (int) countWorkingDays(specification);
-                int paidLeaveDays = getPaidLeaveDays(specification).size();
-                List<LocalDate> paidLeaveDayList = getPaidLeaveDays(specification);
-                int unpaidLeaveDays = getUnpaidLeaveDays(specification).size();
-                List<LocalDate> unpaidLeaveDayList = getUnpaidLeaveDays(specification);
-                int lateDays = getLateDayList(specification).size();
-                Map<LocalDate, Long> lateDayList = getLateDayList(specification);
-                int leaveEarlyDays = getLeaveEarlyDayList(specification).size();
-                Map<LocalDate, Long> leaveEarlyDayList = getLeaveEarlyDayList(specification);
-                Map<LocalDate, Long> frequencyOfCheckingOut = getFrequencyOfCheckingOut(hasEmployeeId(employeeId));
-                long sumLateArrivalTime = getSumLateArrivalTime(specification);
-                long sumEarlyLeavingTime = getSumEarlyLeaveTime(specification);
-                statistics.add(new AttendanceStatisticsDto(
-                        employeeEntity.getName(),
-                        workingDays,
-                        paidLeaveDays,
-                        paidLeaveDayList,
-                        unpaidLeaveDays,
-                        unpaidLeaveDayList,
-                        lateDays,
-                        lateDayList,
-                        leaveEarlyDays,
-                        leaveEarlyDayList,
-                        frequencyOfCheckingOut,
-                        sumLateArrivalTime,
-                        sumEarlyLeavingTime));
-            }
-        } else {
-            statistics = iEmployeeRepository.findAll().stream()
-                    .map(employeeEntity -> {
-                        EmployeeDto employeeDto = employeeMapper.toDTO(employeeEntity);
-                        Long _employeeId = employeeDto.getEmployeeId();
-                        specification = Specification
-                                .where(hasEmployeeId(_employeeId))
-                                .and(hasMonth(month))
+                if (month != null && year != null) {
+                    Specification<AttendanceEntity> specification = Specification
+                            .where(hasEmployeeId(employeeId))
+                            .and(hasMonth(month))
+                            .and(hasYear(year))
+                            .and(hasLatestCheckOut());
+                    statistics.add(generateEmployeeStatistics(specification, employeeEntity, month, year));
+                } else if (year != null) {
+                    for (int m = 1; m <= 12; m++) {
+                        Specification<AttendanceEntity> specification = Specification
+                                .where(hasEmployeeId(employeeId))
+                                .and(hasMonth(m))
                                 .and(hasYear(year))
                                 .and(hasLatestCheckOut());
-                        int workingDays = (int) countWorkingDays(specification);
-                        int paidLeaveDays = getPaidLeaveDays(specification).size();
-                        List<LocalDate> paidLeaveDayList = getPaidLeaveDays(specification);
-                        int unpaidLeaveDays = getUnpaidLeaveDays(specification).size();
-                        List<LocalDate> unpaidLeaveDayList = getUnpaidLeaveDays(specification);
-                        int lateDays = getLateDayList(specification).size();
-                        Map<LocalDate, Long> lateDayList = getLateDayList(specification);
-                        int leaveEarlyDays = getLeaveEarlyDayList(specification).size();
-                        Map<LocalDate, Long> leaveEarlyDayList = getLeaveEarlyDayList(specification);
-                        Map<LocalDate, Long> frequencyOfCheckingOut = getFrequencyOfCheckingOut(hasEmployeeId(_employeeId));
-                        long sumLateArrivalTime = getSumLateArrivalTime(specification);
-                        long sumEarlyLeavingTime = getSumEarlyLeaveTime(specification);
-                        return new AttendanceStatisticsDto(
-                                employeeDto.getName(),
-                                workingDays,
-                                paidLeaveDays,
-                                paidLeaveDayList,
-                                unpaidLeaveDays,
-                                unpaidLeaveDayList,
-                                lateDays,
-                                lateDayList,
-                                leaveEarlyDays,
-                                leaveEarlyDayList,
-                                frequencyOfCheckingOut,
-                                sumLateArrivalTime,
-                                sumEarlyLeavingTime);
-                    }).toList();
+
+                        AttendanceStatisticsDto monthlyStatistics = generateEmployeeStatistics(specification, employeeEntity, m, year);
+                        statistics.add(monthlyStatistics);
+                    }
+                }
+            }
+        } else if (year != null) {
+            statistics = iEmployeeRepository.findAll().stream()
+                    .map(employeeEntity -> {
+                        List<AttendanceStatisticsDto> employeeStatistics = new ArrayList<>();
+                        for (int m = 1; m <= 12; m++) {
+                            Specification<AttendanceEntity> specification = Specification
+                                    .where(hasEmployeeId(employeeEntity.getEmployeeId()))
+                                    .and(hasMonth(m))
+                                    .and(hasYear(year))
+                                    .and(hasLatestCheckOut());
+
+                            AttendanceStatisticsDto monthlyStatistics = generateEmployeeStatistics(specification, employeeEntity, m, year);
+                            employeeStatistics.add(monthlyStatistics);
+                        }
+                        return employeeStatistics;
+                    })
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
         }
         return statistics;
     }
+
 
     @Override
     public List<AttendanceByDate> getAttendanceGroupByDate() {
@@ -207,13 +176,13 @@ public class AttendanceService implements IAttendanceService {
 
     @Override
     public List<AttendanceDto> getByEmployeeId(Long employeeId) {
-        specification = Specification.where(hasEmployeeId(employeeId));
+        Specification<AttendanceEntity> specification = Specification.where(hasEmployeeId(employeeId));
         return iAttendanceRepository.findAll(specification).stream().map(attendanceMapper::toDTO).collect(Collectors.toList());
     }
 
     @Override
     public List<AttendanceDto> getByEmployeeIdAndDate(Long employeeId, LocalDate date) {
-        specification = Specification.where(hasEmployeeId(employeeId).and(hasDate(date)));
+        Specification<AttendanceEntity> specification = Specification.where(hasEmployeeId(employeeId).and(hasDate(date)));
         return iAttendanceRepository.findAll(specification).stream().map(attendanceMapper::toDTO).collect(Collectors.toList());
     }
 
@@ -329,7 +298,14 @@ public class AttendanceService implements IAttendanceService {
                 ));
     }
 
-    private Map<LocalDate, Long> getFrequencyOfCheckingOut(Specification<AttendanceEntity> specification) {
+    private Map<LocalDate, Long> getFrequencyOfCheckingOut(Long employeeId, Integer month, Integer year) {
+        Specification<AttendanceEntity> specification = Specification.where(hasEmployeeId(employeeId));
+        if (month != null) {
+            specification = specification.and(hasMonth(month));
+        }
+        if (year != null) {
+            specification = specification.and(hasYear(year));
+        }
         return iAttendanceRepository.findAll(specification).stream()
                 .filter(attendance -> attendance.getCheckOut() != null)
                 .collect(Collectors.groupingBy(
@@ -337,6 +313,7 @@ public class AttendanceService implements IAttendanceService {
                         Collectors.counting()
                 ));
     }
+
 
     private long getSumLateArrivalTime(Specification<AttendanceEntity> specification) {
         return iAttendanceRepository.findAll(specification).stream()
@@ -358,5 +335,38 @@ public class AttendanceService implements IAttendanceService {
                             ? Duration.between(checkOut, LocalTime.of(17, 0)).toMinutes()
                             : 0;
                 }).sum();
+    }
+
+    private AttendanceStatisticsDto generateEmployeeStatistics(Specification<AttendanceEntity> specification, EmployeeEntity employeeEntity, int month, int year) {
+        Long employeeId = employeeEntity.getEmployeeId();
+        String reportingPeriod = month + "-" + year;
+        int workingDays = (int) countWorkingDays(specification);
+        int paidLeaveDays = getPaidLeaveDays(specification).size();
+        List<LocalDate> paidLeaveDayList = getPaidLeaveDays(specification);
+        int unpaidLeaveDays = getUnpaidLeaveDays(specification).size();
+        List<LocalDate> unpaidLeaveDayList = getUnpaidLeaveDays(specification);
+        int lateDays = getLateDayList(specification).size();
+        Map<LocalDate, Long> lateDayList = getLateDayList(specification);
+        int leaveEarlyDays = getLeaveEarlyDayList(specification).size();
+        Map<LocalDate, Long> leaveEarlyDayList = getLeaveEarlyDayList(specification);
+        Map<LocalDate, Long> frequencyOfCheckingOut = getFrequencyOfCheckingOut(employeeId, month, year);
+        long sumLateArrivalTime = getSumLateArrivalTime(specification);
+        long sumEarlyLeavingTime = getSumEarlyLeaveTime(specification);
+        return new AttendanceStatisticsDto(
+                reportingPeriod,
+                employeeEntity.getName(),
+                workingDays,
+                paidLeaveDays,
+                paidLeaveDayList,
+                unpaidLeaveDays,
+                unpaidLeaveDayList,
+                lateDays,
+                lateDayList,
+                leaveEarlyDays,
+                leaveEarlyDayList,
+                frequencyOfCheckingOut,
+                sumLateArrivalTime,
+                sumEarlyLeavingTime
+        );
     }
 }

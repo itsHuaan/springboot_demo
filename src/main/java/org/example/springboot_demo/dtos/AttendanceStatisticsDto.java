@@ -12,6 +12,7 @@ import java.util.Map;
 @AllArgsConstructor
 @Builder
 public class AttendanceStatisticsDto {
+    private String reportingPeriod;
     private String name;
     private int workingDays;
     private int paidLeaveDays;

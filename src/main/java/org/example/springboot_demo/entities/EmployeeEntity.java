@@ -20,4 +20,6 @@ public class EmployeeEntity {
     private int unusedPaidLeaves = 1;
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<AttendanceEntity> attendanceList;
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OTRegistrationEntity> otRegistrationList;
 }
