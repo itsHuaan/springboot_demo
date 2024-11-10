@@ -130,7 +130,7 @@ public class AttendanceService implements IAttendanceService {
                 Map<LocalDate, Long> lateDayList = getLateDayList(specification);
                 int leaveEarlyDays = getLeaveEarlyDayList(specification).size();
                 Map<LocalDate, Long> leaveEarlyDayList = getLeaveEarlyDayList(specification);
-                Map<LocalDate, Long> frequencyOfCheckingOut = null;
+                Map<LocalDate, Long> frequencyOfCheckingOut = getFrequencyOfCheckingOut(specification);
                 long sumLateArrivalTime = getSumLateArrivalTime(specification);
                 long sumEarlyLeavingTime = getSumEarlyLeaveTime(specification);
                 statistics.add(new AttendanceStatisticsDto(
@@ -167,7 +167,7 @@ public class AttendanceService implements IAttendanceService {
                         Map<LocalDate, Long> lateDayList = getLateDayList(specification);
                         int leaveEarlyDays = getLeaveEarlyDayList(specification).size();
                         Map<LocalDate, Long> leaveEarlyDayList = getLeaveEarlyDayList(specification);
-                        Map<LocalDate, Long> frequencyOfCheckingOut = null;
+                        Map<LocalDate, Long> frequencyOfCheckingOut = getFrequencyOfCheckingOut(specification);
                         long sumLateArrivalTime = getSumLateArrivalTime(specification);
                         long sumEarlyLeavingTime = getSumEarlyLeaveTime(specification);
                         return new AttendanceStatisticsDto(
