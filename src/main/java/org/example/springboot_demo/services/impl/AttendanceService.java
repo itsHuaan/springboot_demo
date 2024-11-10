@@ -130,7 +130,7 @@ public class AttendanceService implements IAttendanceService {
                 Map<LocalDate, Long> lateDayList = getLateDayList(specification);
                 int leaveEarlyDays = getLeaveEarlyDayList(specification).size();
                 Map<LocalDate, Long> leaveEarlyDayList = getLeaveEarlyDayList(specification);
-                Map<LocalDate, Long> frequencyOfCheckingOut = getFrequencyOfCheckingOut(specification);
+                Map<LocalDate, Long> frequencyOfCheckingOut = getFrequencyOfCheckingOut(hasEmployeeId(employeeId));
                 long sumLateArrivalTime = getSumLateArrivalTime(specification);
                 long sumEarlyLeavingTime = getSumEarlyLeaveTime(specification);
                 statistics.add(new AttendanceStatisticsDto(
@@ -167,7 +167,7 @@ public class AttendanceService implements IAttendanceService {
                         Map<LocalDate, Long> lateDayList = getLateDayList(specification);
                         int leaveEarlyDays = getLeaveEarlyDayList(specification).size();
                         Map<LocalDate, Long> leaveEarlyDayList = getLeaveEarlyDayList(specification);
-                        Map<LocalDate, Long> frequencyOfCheckingOut = getFrequencyOfCheckingOut(specification);
+                        Map<LocalDate, Long> frequencyOfCheckingOut = getFrequencyOfCheckingOut(hasEmployeeId(_employeeId));
                         long sumLateArrivalTime = getSumLateArrivalTime(specification);
                         long sumEarlyLeavingTime = getSumEarlyLeaveTime(specification);
                         return new AttendanceStatisticsDto(
@@ -203,6 +203,18 @@ public class AttendanceService implements IAttendanceService {
                         .attendances(entry.getValue())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AttendanceDto> getByEmployeeId(Long employeeId) {
+        specification = Specification.where(hasEmployeeId(employeeId));
+        return iAttendanceRepository.findAll(specification).stream().map(attendanceMapper::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AttendanceDto> getByEmployeeIdAndDate(Long employeeId, LocalDate date) {
+        specification = Specification.where(hasEmployeeId(employeeId).and(hasDate(date)));
+        return iAttendanceRepository.findAll(specification).stream().map(attendanceMapper::toDTO).collect(Collectors.toList());
     }
 
     private void handleLeaveDays(AttendanceEntity attendanceEntity, long employeeId, String checkInStatus) {
@@ -257,9 +269,9 @@ public class AttendanceService implements IAttendanceService {
     private long countWorkingDays(Specification<AttendanceEntity> specification) {
         return iAttendanceRepository.findAll(specification).stream()
                 .filter(attendance -> attendance.getCheckIn() != null
-                && attendance.getCheckOut() != null
-                && attendance.getCheckInStatus() != null
-                && !attendance.getCheckInStatus().equalsIgnoreCase(AttendanceStatus.absent.toString()))
+                        && attendance.getCheckOut() != null
+                        && attendance.getCheckInStatus() != null
+                        && !attendance.getCheckInStatus().equalsIgnoreCase(AttendanceStatus.absent.toString()))
                 .count();
     }
 
@@ -317,8 +329,13 @@ public class AttendanceService implements IAttendanceService {
                 ));
     }
 
-    private Map<LocalDate, Long> getFrequencyOfCheckingOut(Specification<AttendanceEntity> specification){
-        return null;
+    private Map<LocalDate, Long> getFrequencyOfCheckingOut(Specification<AttendanceEntity> specification) {
+        return iAttendanceRepository.findAll(specification).stream()
+                .filter(attendance -> attendance.getCheckOut() != null)
+                .collect(Collectors.groupingBy(
+                        AttendanceEntity::getDate,
+                        Collectors.counting()
+                ));
     }
 
     private long getSumLateArrivalTime(Specification<AttendanceEntity> specification) {
@@ -337,10 +354,9 @@ public class AttendanceService implements IAttendanceService {
                 .filter(attendance -> attendance.getCheckOut() != null)
                 .mapToLong(attendance -> {
                     LocalTime checkOut = attendance.getCheckOut();
-                    return attendance.getCheckOutStatus().equalsIgnoreCase("leaveEarly") && checkOut.isBefore(LocalTime.of(17, 0))
+                    return attendance.getCheckOutStatus().equalsIgnoreCase(AttendanceStatus.leaveEarly.toString()) && checkOut.isBefore(LocalTime.of(17, 0))
                             ? Duration.between(checkOut, LocalTime.of(17, 0)).toMinutes()
                             : 0;
                 }).sum();
     }
-
 }

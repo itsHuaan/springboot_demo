@@ -1,25 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Attendance Statistics</title>
-
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/bootstrap.css">
-
-  <link rel="stylesheet" href="/vendors/simple-datatables/style.css">
-
-  <link rel="stylesheet" href="/vendors/perfect-scrollbar/perfect-scrollbar.css">
-  <link rel="stylesheet" href="/vendors/bootstrap-icons/bootstrap-icons.css">
-  <link rel="stylesheet" href="/css/app.css">
-  <link rel="shortcut icon" href="/images/favicon.svg" type="image/x-icon">
+<head th:replace="~{components/fragments :: head('Attendance Statistics')}">
+  <title></title>
 </head>
 
 <body>
 <div id="app">
-  <div th:insert="~{components/sidebar.html}"></div>
+  <div th:replace="~{components/fragments :: sidebar}"></div>
   <div id="main">
     <header class="mb-3">
       <a href="#" class="burger-btn d-block d-xl-none">
@@ -36,7 +23,7 @@
           <div class="col-12 col-md-6 order-md-2 order-first">
             <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
               <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Attendance Statistics</li>
               </ol>
             </nav>
@@ -46,47 +33,21 @@
       <section class="section">
         <div class="card">
           <div class="card-body">
-            <table class="table table-hover" id="table1">
-              <thead>
-              <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Paid Days off left</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr th:each="employee : ${employees}">
-                <td>
-                  <span th:text="${employee.employeeId}"></span>
-                </td>
-                <td>
-                  <span th:text="${employee.name}"></span>
-                </td>
-                <td>
-                  <span th:text="${employee.unusedPaidLeaves} + ' days'"></span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
+
           </div>
         </div>
 
       </section>
     </div>
 
-    <div th:insert="~{components/footer.html}"></div>
+    <div th:replace="~{components/fragments :: footer}"></div>
   </div>
 </div>
-<script src="/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-<script src="/js/bootstrap.bundle.min.js"></script>
-
-<script src="/vendors/simple-datatables/simple-datatables.js"></script>
+<div th:replace="~{components/fragments :: js-libraries}"></div>
 <script>
   let table1 = document.querySelector('#table1');
   let dataTable = new simpleDatatables.DataTable(table1);
 </script>
-
-<script src="/js/main.js"></script>
 </body>
 
 </html>

@@ -1,25 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendances Management</title>
-
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/bootstrap.css">
-
-    <link rel="stylesheet" href="/vendors/simple-datatables/style.css">
-
-    <link rel="stylesheet" href="/vendors/perfect-scrollbar/perfect-scrollbar.css">
-    <link rel="stylesheet" href="/vendors/bootstrap-icons/bootstrap-icons.css">
-    <link rel="stylesheet" href="/css/app.css">
-    <link rel="shortcut icon" href="/images/favicon.svg" type="image/x-icon">
+<head th:replace="~{components/fragments :: head('Attendances Management')}">
+    <title></title>
 </head>
 
 <body>
 <div id="app">
-    <div th:insert="~{components/sidebar.html}"></div>
+    <div th:replace="~{components/fragments :: sidebar}"></div>
     <div id="main">
         <header class="mb-3">
             <a href="#" class="burger-btn d-block d-xl-none">
@@ -36,36 +23,60 @@
                     <div class="col-12 col-md-6 order-md-2 order-first">
                         <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Attendances</li>
+                                <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                                <li class="breadcrumb-item">Attendances</li>
+                                <li class="breadcrumb-item active" aria-current="page">Attendances Tracking</li>
                             </ol>
                         </nav>
                     </div>
                 </div>
             </div>
+            <div class="row mb-3 d-flex justify-content-sm-between">
+                <div class="col-md-4">
+                    <label for="attendance-date" class="form-label">Select Date</label>
+                    <input id="attendance-date" type="date" class="form-control simple-date-picker"
+                           placeholder="Select date..">
+                </div>
+                <div class="col-md-4">
+                    <label for="employee-picker" class="form-label">Select an Employee</label>
+                    <select id="employee-picker" class="form-control">
+                        <option value="" selected disabled>Filter</option>
+                        <option th:each="employee : ${employees}"
+                                th:value="${employee.employeeId}"
+                                th:text="${employee.name}">Employee
+                        </option>
+                    </select>
+                </div>
+            </div>
             <section class="section">
                 <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            Attendances
+                        </h5>
+                    </div>
                     <div class="card-body">
-                        <table class="table table-hover" id="table1">
-                            <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Check-in</th>
-                                <th>Check-in Status</th>
-                                <th>Check-out</th>
-                                <th>Check-out Status</th>
-                                <th>Notes</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="attendance : ${attendances}">
-                                <td>
-                                    <span th:text="${attendance.employee}"></span>
-                                </td>
-                                <td>
-                                    <span th:text="${attendance.checkIn}"></span>
-                                </td>
-                                <td>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="table1">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Check-in</th>
+                                    <th>Check-in Status</th>
+                                    <th>Check-out</th>
+                                    <th>Check-out Status</th>
+                                    <th>Notes</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="attendance : ${attendances}">
+                                    <td>
+                                        <span th:text="${attendance.employee}"></span>
+                                    </td>
+                                    <td>
+                                        <span th:text="${attendance.checkIn}"></span>
+                                    </td>
+                                    <td>
   <span class="badge rounded-pill"
         th:classappend="${attendance.checkInStatus == 'onTime' ? 'bg-success' :
                         (attendance.checkInStatus == 'lateArrival' ? 'bg-secondary' :
@@ -74,43 +85,103 @@
                         (attendance.checkInStatus == 'lateArrival' ? 'Late Arrival' :
                         (attendance.checkInStatus == 'absent' ? 'Absent' : ''))}">
   </span>
-                                </td>
-                                <td>
-                                    <span th:text="${attendance.checkOut}"></span>
-                                </td>
-                                <td>
+                                    </td>
+                                    <td>
+                                        <span th:text="${attendance.checkOut}"></span>
+                                    </td>
+                                    <td>
                                     <span class="badge rounded-pill"
                                           th:classappend="${attendance.checkOutStatus == 'onTime' ? 'bg-success' :
                         (attendance.checkOutStatus == 'leaveEarly' ? 'bg-warning' : '')}"
                                           th:text="${attendance.checkOutStatus == 'onTime' ? 'On Time' :
                         (attendance.checkOutStatus == 'leaveEarly' ? 'Leave Early' : '')}">
   </span>
-                                </td>
-                                <td>
-                                    <span th:text="${attendance.notes}"></span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                    </td>
+                                    <td>
+                                        <span th:text="${attendance.notes}"></span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-
             </section>
         </div>
 
-        <div th:insert="~{components/footer.html}"></div>
+        <div th:replace="~{components/fragments :: footer}"></div>
     </div>
 </div>
-<script src="/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-<script src="/js/bootstrap.bundle.min.js"></script>
-
-<script src="/vendors/simple-datatables/simple-datatables.js"></script>
+<div th:replace="~{components/fragments :: js-libraries}"></div>
 <script>
-    let table1 = document.querySelector('#table1');
-    let dataTable = new simpleDatatables.DataTable(table1);
-</script>
+    $(document).ready(function () {
+        function rowToAdd(attendance) {
+            return [
+                attendance.employee,
+                attendance.checkIn,
+                `<span class="badge rounded-pill ${attendance.checkInStatus === 'onTime' ? 'bg-success' :
+                    (attendance.checkInStatus === 'lateArrival' ? 'bg-secondary' :
+                        (attendance.checkInStatus === 'absent' ? 'bg-danger' : ''))}">
+            ${attendance.checkInStatus === 'onTime' ? 'On Time' :
+                    (attendance.checkInStatus === 'lateArrival' ? 'Late Arrival' :
+                        (attendance.checkInStatus === 'absent' ? 'Absent' : ''))}
+        </span>`,
+                attendance.checkOut,
+                `<span class="badge rounded-pill ${attendance.checkOutStatus === 'onTime' ? 'bg-success' :
+                    (attendance.checkOutStatus === 'leaveEarly' ? 'bg-warning' : '')}">
+            ${attendance.checkOutStatus === 'onTime' ? 'On Time' :
+                    (attendance.checkOutStatus === 'leaveEarly' ? 'Leave Early' : '')}
+        </span>`,
+                attendance.notes
+            ];
+        }
 
-<script src="/js/main.js"></script>
+        flatpickr("#attendance-date", {
+            dateFormat: "Y-m-d",
+            defaultDate: "today",
+            locale: "vi",
+            onChange: function (selectedDates, dateStr, instance) {
+                const selectedDate = dateStr;
+                const dateParts = selectedDate.split('-');
+                const day = dateParts[2];
+                const month = dateParts[1];
+                const year = dateParts[0];
+
+                $.ajax({
+                    url: `/api/attendance/v1`,
+                    type: 'GET',
+                    data: {
+                        day: day,
+                        month: month,
+                        year: year
+                    },
+                    success: function (response) {
+                        console.log(response);
+                        updateAttendanceTable(response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        });
+
+        function updateAttendanceTable(attendances) {
+            const table = $('#table1').DataTable();
+
+            table.clear();
+
+            if (attendances.length > 0) {
+                attendances.forEach(function (attendance) {
+                    table.row.add(rowToAdd(attendance)).draw();
+                });
+            } else {
+                table.draw();
+            }
+        }
+    });
+
+</script>
 </body>
 
 </html>
