@@ -14,6 +14,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @Builder
 public class OTRegistrationModel {
+    private long otRegistrationId;
     private Long employeeId;
     private LocalDate date;
     private LocalTime startTime;

@@ -20,7 +20,6 @@ public class EmployeeMapper implements IBaseMapper<EmployeeDto, EmployeeModel, E
     @Override
     public EmployeeEntity toEntity(EmployeeModel employeeModel) {
         return EmployeeEntity.builder()
-                .employeeId(employeeModel.getEmployeeId())
                 .name(employeeModel.getName())
                 .build();
     }

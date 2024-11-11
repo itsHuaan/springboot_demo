@@ -3,6 +3,14 @@ let jquery_datatable = $("#table1").DataTable({
     ordering: true,
     order: []
 })
+let ot_datatable = $("#ot_table").DataTable({
+    responsive: true,
+    ordering: true,
+    order: [],
+    columnDefs: [
+        { orderable: false, targets: -1 }
+    ]
+})
 let customized_datatable = $("#table2").DataTable({
     responsive: true,
     pagingType: 'simple',
@@ -25,3 +33,4 @@ const setTableColor = () => {
 }
 setTableColor()
 jquery_datatable.on('draw', setTableColor)
+ot_datatable.on('draw', setTableColor)

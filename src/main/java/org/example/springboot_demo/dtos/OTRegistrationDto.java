@@ -12,6 +12,8 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @Builder
 public class OTRegistrationDto {
+    private long otRegistrationId;
+    private long employeeId;
     private String employee;
     private LocalDate date;
     private LocalTime startTime;

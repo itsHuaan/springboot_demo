@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,7 +32,7 @@ public class OTRegistrationService implements IOTRegistrationService {
 
     @Override
     public OTRegistrationDto findById(Long id) {
-        return null;
+        return otRegistrationMapper.toDTO(Objects.requireNonNull(otRegistrationRepository.findById(id).orElse(null)));
     }
 
     @Override

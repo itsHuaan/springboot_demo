@@ -112,17 +112,37 @@ public class AttendanceService implements IAttendanceService {
     @Override
     public List<AttendanceStatisticsDto> getStatistics(Long employeeId, Integer month, Integer year) {
         List<AttendanceStatisticsDto> statistics = new ArrayList<>();
-        if (employeeId != null) {
-            EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
-            if (employeeEntity != null) {
-                if (month != null && year != null) {
+
+        if (year != null) {
+            if (employeeId == null && month != null) {
+                // Trường hợp 1: Toàn bộ nhân viên trong một tháng cụ thể
+                statistics = iEmployeeRepository.findAll().stream()
+                        .map(employeeEntity -> {
+                            Specification<AttendanceEntity> specification = Specification
+                                    .where(hasEmployeeId(employeeEntity.getEmployeeId()))
+                                    .and(hasMonth(month))
+                                    .and(hasYear(year))
+                                    .and(hasLatestCheckOut());
+
+                            return generateEmployeeStatistics(specification, employeeEntity, month, year);
+                        })
+                        .collect(Collectors.toList());
+            } else if (employeeId != null && month != null) {
+                // Trường hợp 2: Một nhân viên trong một tháng cụ thể
+                EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
+                if (employeeEntity != null) {
                     Specification<AttendanceEntity> specification = Specification
                             .where(hasEmployeeId(employeeId))
                             .and(hasMonth(month))
                             .and(hasYear(year))
                             .and(hasLatestCheckOut());
+
                     statistics.add(generateEmployeeStatistics(specification, employeeEntity, month, year));
-                } else if (year != null) {
+                }
+            } else if (employeeId != null) {
+                // Trường hợp 3: Một nhân viên trong cả năm
+                EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
+                if (employeeEntity != null) {
                     for (int m = 1; m <= 12; m++) {
                         Specification<AttendanceEntity> specification = Specification
                                 .where(hasEmployeeId(employeeId))
@@ -134,28 +154,31 @@ public class AttendanceService implements IAttendanceService {
                         statistics.add(monthlyStatistics);
                     }
                 }
-            }
-        } else if (year != null) {
-            statistics = iEmployeeRepository.findAll().stream()
-                    .map(employeeEntity -> {
-                        List<AttendanceStatisticsDto> employeeStatistics = new ArrayList<>();
-                        for (int m = 1; m <= 12; m++) {
-                            Specification<AttendanceEntity> specification = Specification
-                                    .where(hasEmployeeId(employeeEntity.getEmployeeId()))
-                                    .and(hasMonth(m))
-                                    .and(hasYear(year))
-                                    .and(hasLatestCheckOut());
+            } else {
+                // Trường hợp toàn bộ nhân viên trong cả năm (giữ nguyên logic cũ)
+                statistics = iEmployeeRepository.findAll().stream()
+                        .map(employeeEntity -> {
+                            List<AttendanceStatisticsDto> employeeStatistics = new ArrayList<>();
+                            for (int m = 1; m <= 12; m++) {
+                                Specification<AttendanceEntity> specification = Specification
+                                        .where(hasEmployeeId(employeeEntity.getEmployeeId()))
+                                        .and(hasMonth(m))
+                                        .and(hasYear(year))
+                                        .and(hasLatestCheckOut());
 
-                            AttendanceStatisticsDto monthlyStatistics = generateEmployeeStatistics(specification, employeeEntity, m, year);
-                            employeeStatistics.add(monthlyStatistics);
-                        }
-                        return employeeStatistics;
-                    })
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
+                                AttendanceStatisticsDto monthlyStatistics = generateEmployeeStatistics(specification, employeeEntity, m, year);
+                                employeeStatistics.add(monthlyStatistics);
+                            }
+                            return employeeStatistics;
+                        })
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+            }
         }
+
         return statistics;
     }
+
 
 
     @Override

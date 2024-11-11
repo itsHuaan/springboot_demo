@@ -13,7 +13,8 @@
     <link rel="stylesheet" href="/vendors/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/app.css">
-    <link rel="shortcut icon" href="/images/favicon.svg" type="image/x-icon">
+    <link rel="shortcut icon" href="/images/logo/favicon.svg" type="image/x-icon">
+    <link rel="stylesheet" href="/vendors/apexcharts/apexcharts.css">
     <link rel="stylesheet" href="/vendors/datatables.net-bs5/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="/css/table-datatable-jquery.css">
     <link rel="stylesheet" href="/vendors/flatpickr/flatpickr.min.css">
@@ -44,7 +45,7 @@
                         </a>
                     </li>
 
-                    <li class="sidebar-item  has-sub">
+                    <li class="sidebar-item has-sub">
                         <a href="#" class='sidebar-link'>
                             <i class="bi bi-table"></i>
                             <span>Attendances</span>
@@ -54,20 +55,26 @@
                                 <a href="/attendances">Attendances Tracking</a>
                             </li>
                             <li class="submenu-item ">
-                                <a href="#">OT Registration</a>
-                            </li>
-                            <li class="submenu-item ">
                                 <a href="#">Leave Request</a>
                             </li>
                         </ul>
                     </li>
 
-<!--                    <li class="sidebar-item" th:classappend="${currentPath == '/attendances'} ? 'active'">-->
-<!--                        <a href="/attendances" class="sidebar-link">-->
-<!--                            <i class="bi bi-table"></i>-->
-<!--                            <span>Attendances</span>-->
-<!--                        </a>-->
-<!--                    </li>-->
+                    <li class="sidebar-item has-sub"
+                        th:classappend="${currentPath == '/ot_registrations' or currentPath == '/ot_register'} ? 'active'">
+                        <a href="#" class='sidebar-link'>
+                            <i class="bi bi-clock-fill"></i>
+                            <span>OT</span>
+                        </a>
+                        <ul class="submenu">
+                            <li class="submenu-item" th:classappend="${currentPath == '/ot_registrations'} ? 'active'">
+                                <a href="/ot_registrations">Registrations</a>
+                            </li>
+                            <li class="submenu-item" th:classappend="${currentPath == '/ot_register'} ? 'active'">
+                                <a href="ot_register">Register for OT</a>
+                            </li>
+                        </ul>
+                    </li>
 
                     <li class="sidebar-item" th:classappend="${currentPath == '/employees'} ? 'active'">
                         <a href="/employees" class="sidebar-link">
@@ -113,7 +120,9 @@
     <script src="/vendors/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
     <script src="/js/datatables.js"></script>
     <script src="/vendors/simple-datatables/simple-datatables.js"></script>
+    <script src="/vendors/dayjs/dayjs.min.js"></script>
     <script src="/vendors/apexcharts/apexcharts.js"></script>
+    <script src="/js/pages/ui-apexchart.js"></script>
     <script src="/js/pages/dashboard.js"></script>
     <script src="/js/main.js"></script>
 </div>

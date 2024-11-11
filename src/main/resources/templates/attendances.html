@@ -33,14 +33,12 @@
             </div>
             <div class="row mb-3 d-flex justify-content-sm-between">
                 <div class="col-md-4">
-                    <label for="attendance-date" class="form-label">Select Date</label>
-                    <input id="attendance-date" type="date" class="form-control simple-date-picker"
+                    <input id="attendance-date" type="date" class="form-select simple-date-picker"
                            placeholder="Select date..">
                 </div>
                 <div class="col-md-4">
-                    <label for="employee-picker" class="form-label">Select an Employee</label>
-                    <select id="employee-picker" class="form-control">
-                        <option value="" selected disabled>Filter</option>
+                    <select id="employee-picker" class="form-select" aria-label="Default select example">
+                        <option value="" selected disabled>Select an Employee</option>
                         <option th:each="employee : ${employees}"
                                 th:value="${employee.employeeId}"
                                 th:text="${employee.name}">Employee
@@ -180,7 +178,6 @@
             }
         }
     });
-
 </script>
 </body>
 

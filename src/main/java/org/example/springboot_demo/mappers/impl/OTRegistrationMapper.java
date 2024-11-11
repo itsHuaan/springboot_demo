@@ -12,6 +12,8 @@ public class OTRegistrationMapper implements IBaseMapper<OTRegistrationDto, OTRe
     @Override
     public OTRegistrationDto toDTO(OTRegistrationEntity entity) {
         return OTRegistrationDto.builder()
+                .otRegistrationId(entity.getOtRegistrationId())
+                .employeeId(entity.getEmployee().getEmployeeId())
                 .employee(entity.getEmployee().getName())
                 .date(entity.getDate())
                 .startTime(entity.getStartTime())
@@ -26,6 +28,7 @@ public class OTRegistrationMapper implements IBaseMapper<OTRegistrationDto, OTRe
         EmployeeEntity employeeEntity = new EmployeeEntity();
         employeeEntity.setEmployeeId(model.getEmployeeId());
         return OTRegistrationEntity.builder()
+                .otRegistrationId(model.getOtRegistrationId())
                 .employee(employeeEntity)
                 .date(model.getDate())
                 .startTime(model.getStartTime())
