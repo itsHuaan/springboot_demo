@@ -32,7 +32,7 @@
             </div>
             <div class="row mb-3 d-flex justify-content-sm-between">
                 <div class="col-md-4">
-                    <select id="employee-picker" class="form-select" aria-label="Default select example">
+                    <select id="employee-picker" class="form-select" aria-label="Default select example" required>
                         <option value="" selected disabled>Select an Employee</option>
                         <option th:each="employee : ${employees}"
                                 th:value="${employee.employeeId}"
@@ -40,21 +40,21 @@
                         </option>
                     </select>
                 </div>
-<!--
+                <!--
 
-                <div class="col-md-3">
-                    <select id="month-picker" class="form-select" aria-label="Default select example">
-                        <option value="" selected disabled>Select Month</option>
-                        <option th:each="month, iterStat : ${months}"
-                                th:value="${iterStat.index + 1}"
-                                th:text="${month}">Month
-                        </option>
-                    </select>
-                </div>
--->
+                                <div class="col-md-3">
+                                    <select id="month-picker" class="form-select" aria-label="Default select example">
+                                        <option value="" selected disabled>Select Month</option>
+                                        <option th:each="month, iterStat : ${months}"
+                                                th:value="${iterStat.index + 1}"
+                                                th:text="${month}">Month
+                                        </option>
+                                    </select>
+                                </div>
+                -->
 
                 <div class="col-md-4">
-                    <select id="year-picker" class="form-select" aria-label="Default select example">
+                    <select id="year-picker" class="form-select" aria-label="Default select example" required>
                         <option value="" selected disabled>Select Year</option>
                         <option th:each="year : ${years}"
                                 th:value="${year}"
@@ -88,15 +88,15 @@
     var barOptions = {
         series: [
             {
-                name: "Test1",
+                name: "Late days",
                 data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             },
             {
-                name: "Test2",
+                name: "Early departure",
                 data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             },
             {
-                name: "Test3",
+                name: "Absence days",
                 data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             },
         ],
@@ -120,7 +120,7 @@
             colors: ["transparent"],
         },
         xaxis: {
-            categories: ["Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         },
         yaxis: {
             title: {
@@ -132,7 +132,7 @@
         },
         tooltip: {
             y: {
-                formatter: function(val) {
+                formatter: function (val) {
                     return val + " times";
                 },
             },
@@ -140,6 +140,56 @@
     };
     var yearlyStatistic = new ApexCharts(document.querySelector("#yearly-statistic"), barOptions);
     yearlyStatistic.render();
+
+    $(document).ready(function () {
+        $('.btn.icon-left.btn-primary').on('click', function (event) {
+            event.preventDefault();
+            const employeeId = $('#employee-picker').val();
+            const year = $('#year-picker').val();
+            if (!employeeId || !year) {
+                alert("Please select an employee and a year before filtering.");
+                return;
+            }
+            $.ajax({
+                url: '/api/attendance/v1/statistics',
+                method: 'GET',
+                data: {
+                    employeeId: employeeId,
+                    year: year
+                },
+                success: function (response) {
+                    let lateDaysData = Array(12).fill(0);
+                    let earlyDepartureData = Array(12).fill(0);
+                    let absenceDaysData = Array(12).fill(0);
+
+                    response.forEach(item => {
+                        const month = parseInt(item.reportingPeriod.split('-')[0]) - 1;
+                        lateDaysData[month] = item.lateDays;
+                        earlyDepartureData[month] = item.leaveEarlyDays;
+                        absenceDaysData[month] = item.unpaidLeaveDays + item.paidLeaveDays;
+                    });
+                    yearlyStatistic.updateSeries([
+                        {
+                            name: "Late days",
+                            data: lateDaysData,
+                        },
+                        {
+                            name: "Early departure",
+                            data: earlyDepartureData,
+                        },
+                        {
+                            name: "Absence days",
+                            data: absenceDaysData,
+                        }
+                    ]);
+                },
+                error: function (error) {
+                    console.log('Error fetching data:', error);
+                    alert('There was an error retrieving the data.');
+                }
+            });
+        });
+    });
 </script>
 </body>
 

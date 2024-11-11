@@ -31,7 +31,12 @@ public class HomeController {
     private final OTRegistrationMapper otRegistrationMapper;
 
     @Autowired
-    public HomeController(AttendanceService attendanceService, EmployeeService employeeService, OTRegistrationService otRegistrationService, AttendanceMapper attendanceMapper, EmployeeMapper employeeMapper, OTRegistrationMapper otRegistrationMapper) {
+    public HomeController(AttendanceService attendanceService, 
+                          EmployeeService employeeService,
+                          OTRegistrationService otRegistrationService,
+                          AttendanceMapper attendanceMapper,
+                          EmployeeMapper employeeMapper,
+                          OTRegistrationMapper otRegistrationMapper) {
         this.attendanceService = attendanceService;
         this.employeeService = employeeService;
         this.otRegistrationService = otRegistrationService;
@@ -90,6 +95,8 @@ public class HomeController {
 
     @GetMapping("ot_register")
     public String otRegisterPage(Model model) {
+        List<EmployeeDto> employees = employeeService.findAll();
+        model.addAttribute("employees", employees);
         model.addAttribute("currentPath", "/ot_register");
         return "ot/register_for_ot";
     }

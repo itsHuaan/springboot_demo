@@ -46,35 +46,43 @@
                                                 <label>First Name</label>
                                             </div>
                                             <div class="col-md-8 form-group">
-                                                <input type="text" id="first-name" class="form-control"
-                                                       name="fname" placeholder="First Name">
+                                                <select id="employee-picker" class="form-select" aria-label="Default select example" required>
+                                                    <option value="" selected disabled>Select an Employee</option>
+                                                    <option th:each="employee : ${employees}"
+                                                            th:value="${employee.employeeId}"
+                                                            th:text="${employee.name}">Employee
+                                                    </option>
+                                                </select>
                                             </div>
                                             <div class="col-md-4">
-                                                <label>Email</label>
+                                                <label>Date</label>
                                             </div>
                                             <div class="col-md-8 form-group">
-                                                <input type="email" id="email-id" class="form-control"
-                                                       name="email-id" placeholder="Email">
+                                                <input type="text" id="date-picker" class="form-control"
+                                                       placeholder="Select Date" required>
                                             </div>
                                             <div class="col-md-4">
-                                                <label>Mobile</label>
+                                                <label>Start Time</label>
                                             </div>
-                                            <div class="col-md-8 form-group">
-                                                <input type="number" id="contact-info" class="form-control"
-                                                       name="contact" placeholder="Mobile">
+                                            <div class="col-md-4 form-group">
+                                                <input type="text" id="start-time-picker" class="form-control"
+                                                       placeholder="Start Time" required>
+                                            </div>
+                                            <div class="col-md-4 form-group">
+                                                <input type="text" id="end-time-picker" class="form-control"
+                                                       placeholder="End Time" required>
                                             </div>
                                             <div class="col-md-4">
-                                                <label>Password</label>
+                                                <label>Reason</label>
                                             </div>
                                             <div class="col-md-8 form-group">
-                                                <input type="password" id="password" class="form-control"
-                                                       name="password" placeholder="Password">
+                                                <input type="text" id="reason" class="form-control"
+                                                       placeholder="Reason">
                                             </div>
                                             <div class="col-sm-12 d-flex justify-content-end">
-                                                <button type="submit"
-                                                        class="btn btn-primary me-1 mb-1">Submit</button>
-                                                <button type="reset"
-                                                        class="btn btn-light-secondary me-1 mb-1">Reset</button>
+                                                <button type="submit" class="btn btn-primary me-1 mb-1">Submit</button>
+                                                <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -85,11 +93,28 @@
                 </div>
             </section>
         </div>
-
         <div th:replace="~{components/fragments :: footer}"></div>
     </div>
 </div>
 <div th:replace="~{components/fragments :: js-libraries}"></div>
+<script>
+    flatpickr("#date-picker", {dateFormat: "Y-m-d"});
+    flatpickr("#start-time-picker",
+        {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i:S",
+            enableSeconds: true,
+            time_24hr: true
+        });
+    flatpickr("#end-time-picker", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i:S",
+        enableSeconds: true,
+        time_24hr: true
+    });
+</script>
 </body>
 
 </html>
