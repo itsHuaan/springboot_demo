@@ -31,7 +31,7 @@
                 </div>
             </div>
             <div class="row mb-3 d-flex justify-content-sm-between">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <select id="employee-picker" class="form-select" aria-label="Default select example">
                         <option value="" selected disabled>Select an Employee</option>
                         <option th:each="employee : ${employees}"
@@ -40,6 +40,7 @@
                         </option>
                     </select>
                 </div>
+<!--
 
                 <div class="col-md-3">
                     <select id="month-picker" class="form-select" aria-label="Default select example">
@@ -50,8 +51,9 @@
                         </option>
                     </select>
                 </div>
+-->
 
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <select id="year-picker" class="form-select" aria-label="Default select example">
                         <option value="" selected disabled>Select Year</option>
                         <option th:each="year : ${years}"
@@ -60,7 +62,7 @@
                         </option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 justify-content-end">
                     <a href="#" class="btn icon icon-left btn-primary">
                         <i class="bi bi-funnel-fill"></i>
                         Filter</a>
@@ -68,8 +70,11 @@
             </div>
             <section class="section">
                 <div class="card">
+                    <div class="card-header">
+                        <h4>Yearly Statistic</h4>
+                    </div>
                     <div class="card-body">
-                        <div id="bar"></div>
+                        <div id="yearly-statistic"></div>
                     </div>
                 </div>
             </section>
@@ -80,8 +85,61 @@
 </div>
 <div th:replace="~{components/fragments :: js-libraries}"></div>
 <script>
-    let table1 = document.querySelector('#table1');
-    let dataTable = new simpleDatatables.DataTable(table1);
+    var barOptions = {
+        series: [
+            {
+                name: "Test1",
+                data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            },
+            {
+                name: "Test2",
+                data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            },
+            {
+                name: "Test3",
+                data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            },
+        ],
+        chart: {
+            type: "bar",
+            height: 350,
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: "55%",
+                endingShape: "rounded",
+            },
+        },
+        dataLabels: {
+            enabled: false,
+        },
+        stroke: {
+            show: true,
+            width: 2,
+            colors: ["transparent"],
+        },
+        xaxis: {
+            categories: ["Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        },
+        yaxis: {
+            title: {
+                text: "times",
+            },
+        },
+        fill: {
+            opacity: 1,
+        },
+        tooltip: {
+            y: {
+                formatter: function(val) {
+                    return val + " times";
+                },
+            },
+        },
+    };
+    var yearlyStatistic = new ApexCharts(document.querySelector("#yearly-statistic"), barOptions);
+    yearlyStatistic.render();
 </script>
 </body>
 
