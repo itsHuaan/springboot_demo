@@ -357,7 +357,6 @@ public class AttendanceService implements IAttendanceService {
 
     private AttendanceStatisticsDto generateEmployeeStatistics(Specification<AttendanceEntity> specification, EmployeeEntity employeeEntity, int month, int year) {
         long employeeId = employeeEntity.getEmployeeId();
-        String reportingPeriod = month + "-" + year;
         int workingDays = (int) countWorkingDays(specification);
         int paidLeaveDays = getPaidLeaveDays(specification).size();
         List<LocalDate> paidLeaveDayList = getPaidLeaveDays(specification);
@@ -371,7 +370,8 @@ public class AttendanceService implements IAttendanceService {
         long sumLateArrivalTime = getSumLateArrivalTime(specification);
         long sumEarlyLeavingTime = getSumEarlyLeaveTime(specification);
         return new AttendanceStatisticsDto(
-                reportingPeriod,
+                month,
+                year,
                 employeeId,
                 employeeEntity.getName(),
                 workingDays,

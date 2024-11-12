@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/")
@@ -70,7 +71,10 @@ public class HomeController {
     }
 
     @GetMapping("detailed")
-    public String statisticsPage(Model model) {
+    public String statisticsPage(Model model,
+                                 @RequestParam(required = false) Long employeeId,
+                                 @RequestParam(required = false) Integer month,
+                                 @RequestParam(required = false) Integer year) {
         List<EmployeeDto> employees = employeeService.findAll();
         List<String> months = Arrays.asList("January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December");
@@ -79,17 +83,25 @@ public class HomeController {
         for (int i = currentYear; i >= currentYear - 50; i--) {
             years.add(i);
         }
+        List<AttendanceStatisticsDto> detailedStatistics = new ArrayList<>();
+        if (employeeId != null && month != null && year != null) {
+            detailedStatistics = attendanceService.getStatistics(employeeId, month, year);
+        }
+        model.addAttribute("detailedStatistics", detailedStatistics);
         model.addAttribute("months", months);
         model.addAttribute("years", years);
         model.addAttribute("employees", employees);
-        model.addAttribute("currentPath", "/statistics");
+        model.addAttribute("currentPath", "/detailed");
+        model.addAttribute("selectedEmployee", employeeId);
+        model.addAttribute("selectedMonth", month);
+        model.addAttribute("selectedYear", year);
         return "statistics/detailed";
     }
 
     @GetMapping("overview")
     public String overviewPage(Model model) {
         List<EmployeeDto> employeeDtos = employeeService.findAll();
-        List<String> emails = employeeDtos.stream().map(EmployeeDto::getEmail).toList();
+        List<String> emails = employeeDtos.stream().map(EmployeeDto::getEmail).filter(Objects::nonNull).toList();
         List<AttendanceStatisticsDto> overview = attendanceService.getStatistics(null, LocalDate.now().getMonthValue(), LocalDate.now().getYear());
         model.addAttribute("overview", overview);
         model.addAttribute("emails", emails);

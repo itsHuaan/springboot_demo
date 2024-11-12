@@ -37,24 +37,22 @@
                         <option value="" selected disabled>Select an Employee</option>
                         <option th:each="employee : ${employees}"
                                 th:value="${employee.employeeId}"
-                                th:text="${employee.name}">Employee
+                                th:text="${employee.name}"
+                                th:selected="${employee.employeeId == selectedEmployee}">Employee
                         </option>
                     </select>
                 </div>
-                <!--
-
-                                <div class="col-md-3">
-                                    <select id="month-picker" class="form-select" aria-label="Default select example">
-                                        <option value="" selected disabled>Select Month</option>
-                                        <option th:each="month, iterStat : ${months}"
-                                                th:value="${iterStat.index + 1}"
-                                                th:text="${month}">Month
-                                        </option>
-                                    </select>
-                                </div>
-                -->
-
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <select id="month-picker" class="form-select" aria-label="Default select example">
+                        <option value="" selected disabled>Select Month</option>
+                        <option th:each="month, iterStat : ${months}"
+                                th:value="${iterStat.index + 1}"
+                                th:text="${month}"
+                                th:selected="${iterStat.index + 1 == selectedMonth}">Month
+                        </option>
+                    </select>
+                </div>
+                <!--<div class="col-md-4">
                     <select id="year-picker" class="form-select" aria-label="Default select example" required>
                         <option value="" selected disabled>Select Year</option>
                         <option th:each="year : ${years}"
@@ -62,7 +60,7 @@
                                 th:text="${year}">Year
                         </option>
                     </select>
-                </div>
+                </div>-->
                 <div class="col-md-4 justify-content-end">
                     <a href="#" class="btn icon icon-left btn-primary">
                         <i class="bi bi-funnel-fill"></i>
@@ -84,8 +82,15 @@
         <div th:replace="~{components/fragments :: footer}"></div>
     </div>
 </div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var detailedStatistics = /*[[${detailedStatistics}]]*/ [];
+    /*]]>*/
+</script>
+
 <div th:replace="~{components/fragments :: js-libraries}"></div>
 <script>
+    console.log(detailedStatistics);
     var barOptions = {
         series: [
             {
@@ -142,6 +147,33 @@
     var yearlyStatistic = new ApexCharts(document.querySelector("#yearly-statistic"), barOptions);
     yearlyStatistic.render();
 
+    if (detailedStatistics.length > 0) {
+        let lateDaysData = Array(12).fill(0);
+        let earlyDepartureData = Array(12).fill(0);
+        let absenceDaysData = Array(12).fill(0);
+
+        detailedStatistics.forEach(item => {
+            lateDaysData[item.month - 1] = item.lateDays;
+            earlyDepartureData[item.month - 1] = item.leaveEarlyDays;
+            absenceDaysData[item.month - 1] = item.unpaidLeaveDays + item.paidLeaveDays;
+        });
+
+        yearlyStatistic.updateSeries([
+            {
+                name: "Late days",
+                data: lateDaysData,
+            },
+            {
+                name: "Early departure",
+                data: earlyDepartureData,
+            },
+            {
+                name: "Absence days",
+                data: absenceDaysData,
+            }
+        ]);
+    }
+
     $(document).ready(function () {
         $('.btn.icon-left.btn-primary').on('click', function (event) {
             event.preventDefault();
@@ -164,10 +196,9 @@
                     let absenceDaysData = Array(12).fill(0);
 
                     response.forEach(item => {
-                        const month = parseInt(item.reportingPeriod.split('-')[0]) - 1;
-                        lateDaysData[month] = item.lateDays;
-                        earlyDepartureData[month] = item.leaveEarlyDays;
-                        absenceDaysData[month] = item.unpaidLeaveDays + item.paidLeaveDays;
+                        lateDaysData[item.month] = item.lateDays;
+                        earlyDepartureData[item.month] = item.leaveEarlyDays;
+                        absenceDaysData[item.month] = item.unpaidLeaveDays + item.paidLeaveDays;
                     });
                     yearlyStatistic.updateSeries([
                         {

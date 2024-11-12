@@ -115,6 +115,43 @@
         time_24hr: true
     });
 </script>
+<script>
+    $(document).ready(function () {
+        $("form.form-horizontal").on("submit", function (event) {
+            event.preventDefault();
+            var employeeId = $('#employee-picker').val();
+            var date = $('#date-picker').val();
+            var startTime = $('#start-time-picker').val();
+            var endTime = $('#end-time-picker').val();
+            var reason = $('#reason').val();
+            if (!employeeId || !date || !startTime || !endTime) {
+                alert("Please fill in all required fields!");
+                return;
+            }
+            var otData = {
+                employeeId: employeeId,
+                date: date,
+                startTime: startTime,
+                endTime: endTime,
+                reason: reason
+            };
+            $.ajax({
+                url: '/api/ot/v1',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(otData),
+                success: function (response) {
+                    alert("OT registered successfully!");
+                    location.reload();
+                },
+                error: function (error) {
+                    console.log('Error:', error);
+                    alert("There was an error registering the OT. Please try again.");
+                }
+            });
+        });
+    });
+</script>
 </body>
 
 </html>
