@@ -115,7 +115,6 @@ public class AttendanceService implements IAttendanceService {
 
         if (year != null) {
             if (employeeId == null && month != null) {
-                // Trường hợp 1: Toàn bộ nhân viên trong một tháng cụ thể
                 statistics = iEmployeeRepository.findAll().stream()
                         .map(employeeEntity -> {
                             Specification<AttendanceEntity> specification = Specification
@@ -128,7 +127,6 @@ public class AttendanceService implements IAttendanceService {
                         })
                         .collect(Collectors.toList());
             } else if (employeeId != null && month != null) {
-                // Trường hợp 2: Một nhân viên trong một tháng cụ thể
                 EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
                 if (employeeEntity != null) {
                     Specification<AttendanceEntity> specification = Specification
@@ -140,7 +138,6 @@ public class AttendanceService implements IAttendanceService {
                     statistics.add(generateEmployeeStatistics(specification, employeeEntity, month, year));
                 }
             } else if (employeeId != null) {
-                // Trường hợp 3: Một nhân viên trong cả năm
                 EmployeeEntity employeeEntity = iEmployeeRepository.findById(employeeId).orElse(null);
                 if (employeeEntity != null) {
                     for (int m = 1; m <= 12; m++) {
@@ -155,7 +152,6 @@ public class AttendanceService implements IAttendanceService {
                     }
                 }
             } else {
-                // Trường hợp toàn bộ nhân viên trong cả năm (giữ nguyên logic cũ)
                 statistics = iEmployeeRepository.findAll().stream()
                         .map(employeeEntity -> {
                             List<AttendanceStatisticsDto> employeeStatistics = new ArrayList<>();
@@ -175,7 +171,6 @@ public class AttendanceService implements IAttendanceService {
                         .collect(Collectors.toList());
             }
         }
-
         return statistics;
     }
 
@@ -361,7 +356,7 @@ public class AttendanceService implements IAttendanceService {
     }
 
     private AttendanceStatisticsDto generateEmployeeStatistics(Specification<AttendanceEntity> specification, EmployeeEntity employeeEntity, int month, int year) {
-        Long employeeId = employeeEntity.getEmployeeId();
+        long employeeId = employeeEntity.getEmployeeId();
         String reportingPeriod = month + "-" + year;
         int workingDays = (int) countWorkingDays(specification);
         int paidLeaveDays = getPaidLeaveDays(specification).size();
@@ -377,6 +372,7 @@ public class AttendanceService implements IAttendanceService {
         long sumEarlyLeavingTime = getSumEarlyLeaveTime(specification);
         return new AttendanceStatisticsDto(
                 reportingPeriod,
+                employeeId,
                 employeeEntity.getName(),
                 workingDays,
                 paidLeaveDays,

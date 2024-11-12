@@ -1,11 +1,18 @@
 package org.example.springboot_demo.services.impl;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.example.springboot_demo.dtos.EmployeeDto;
 import org.example.springboot_demo.entities.EmployeeEntity;
 import org.example.springboot_demo.mappers.impl.EmployeeMapper;
+import org.example.springboot_demo.models.Email;
 import org.example.springboot_demo.repositories.IEmployeeRepository;
 import org.example.springboot_demo.services.IEmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,12 +23,15 @@ public class EmployeeService implements IEmployeeService {
 
     private final IEmployeeRepository iEmployeeRepository;
     private final EmployeeMapper employeeMapper;
+    private final JavaMailSender mailSender;
 
     @Autowired
     public EmployeeService(IEmployeeRepository iEmployeeRepository,
-                           EmployeeMapper employeeMapper) {
+                           EmployeeMapper employeeMapper,
+                           JavaMailSender mailSender) {
         this.iEmployeeRepository = iEmployeeRepository;
         this.employeeMapper = employeeMapper;
+        this.mailSender = mailSender;
     }
 
     @Override
@@ -42,5 +52,21 @@ public class EmployeeService implements IEmployeeService {
     @Override
     public int delete(Long aLong) {
         return 0;
+    }
+
+    public boolean sendEmail(Email email) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(email.getRecipient());
+            helper.setSubject(email.getSubject());
+            helper.setText(email.getContent(), true);
+
+            mailSender.send(message);
+            return true;
+        } catch (MessagingException e) {
+            return false;
+        }
     }
 }

@@ -1,6 +1,7 @@
 package org.example.springboot_demo.controllers;
 
 import org.example.springboot_demo.dtos.AttendanceDto;
+import org.example.springboot_demo.dtos.AttendanceStatisticsDto;
 import org.example.springboot_demo.dtos.EmployeeDto;
 import org.example.springboot_demo.dtos.OTRegistrationDto;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
@@ -68,7 +69,7 @@ public class HomeController {
         return "employees";
     }
 
-    @GetMapping("statistics")
+    @GetMapping("detailed")
     public String statisticsPage(Model model) {
         List<EmployeeDto> employees = employeeService.findAll();
         List<String> months = Arrays.asList("January", "February", "March", "April", "May", "June",
@@ -82,7 +83,18 @@ public class HomeController {
         model.addAttribute("years", years);
         model.addAttribute("employees", employees);
         model.addAttribute("currentPath", "/statistics");
-        return "statistics";
+        return "statistics/detailed";
+    }
+
+    @GetMapping("overview")
+    public String overviewPage(Model model) {
+        List<EmployeeDto> employeeDtos = employeeService.findAll();
+        List<String> emails = employeeDtos.stream().map(EmployeeDto::getEmail).toList();
+        List<AttendanceStatisticsDto> overview = attendanceService.getStatistics(null, LocalDate.now().getMonthValue(), LocalDate.now().getYear());
+        model.addAttribute("overview", overview);
+        model.addAttribute("emails", emails);
+        model.addAttribute("currentPath", "/overview");
+        return "statistics/overview";
     }
 
     @GetMapping("ot_registrations")

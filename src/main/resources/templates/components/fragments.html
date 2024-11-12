@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="/vendors/datatables.net-bs5/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="/css/table-datatable-jquery.css">
     <link rel="stylesheet" href="/vendors/flatpickr/flatpickr.min.css">
+    <link rel="stylesheet" href="/vendors/flatpickr/plugins/monthSelect/style.css">
 </head>
 
 <body>
@@ -45,7 +46,8 @@
                         </a>
                     </li>
 
-                    <li class="sidebar-item has-sub">
+                    <li class="sidebar-item has-sub"
+                        th:classappend="${currentPath == '/attendances'} ? 'active'">
                         <a href="#" class='sidebar-link'>
                             <i class="bi bi-table"></i>
                             <span>Attendances</span>
@@ -76,18 +78,36 @@
                         </ul>
                     </li>
 
-                    <li class="sidebar-item" th:classappend="${currentPath == '/employees'} ? 'active'">
-                        <a href="/employees" class="sidebar-link">
+                    <li class="sidebar-item has-sub"
+                        th:classappend="${currentPath == '/employees' or currentPath == '/add_employee'} ? 'active'">
+                        <a href="#" class='sidebar-link'>
                             <i class="bi bi-person-fill"></i>
                             <span>Employees</span>
                         </a>
+                        <ul class="submenu">
+                            <li class="submenu-item" th:classappend="${currentPath == '/employees'} ? 'active'">
+                                <a href="/employees">Employee Management</a>
+                            </li>
+                            <li class="submenu-item" th:classappend="${currentPath == '/add_employee'} ? 'active'">
+                                <a href="#">Add an Employee</a>
+                            </li>
+                        </ul>
                     </li>
 
-                    <li class="sidebar-item" th:classappend="${currentPath == '/statistics'} ? 'active'">
-                        <a href="/statistics" class="sidebar-link">
-                            <i class="bi bi-bar-chart-fill"></i>
+                    <li class="sidebar-item has-sub"
+                        th:classappend="${currentPath == '/detailed' or currentPath == '/overview'} ? 'active'">
+                        <a href="#" class='sidebar-link'>
+                            <i class="bi bi-bar-chart-line-fill"></i>
                             <span>Statistics</span>
                         </a>
+                        <ul class="submenu">
+                            <li class="submenu-item" th:classappend="${currentPath == '/overview'} ? 'active'">
+                                <a href="/overview">Overview</a>
+                            </li>
+                            <li class="submenu-item" th:classappend="${currentPath == '/detailed'} ? 'active'">
+                                <a href="/detailed">Detailed</a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
             </div>
@@ -113,6 +133,7 @@
 <div th:fragment="js-libraries">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/vendors/flatpickr/flatpickr.min.js"></script>
+    <script src="/vendors/flatpickr/plugins/monthSelect/index.js"></script>
     <script src="/js/date-picker.js"></script>
     <script src="/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script src="/js/bootstrap.bundle.min.js"></script>

@@ -9,4 +9,6 @@ import lombok.*;
 @Builder
 public class EmployeeModel {
     private String name;
+    private String email;
+    private int unusedPaidLeaves = 1;
 }

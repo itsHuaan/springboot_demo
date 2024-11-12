@@ -45,6 +45,12 @@
                         </option>
                     </select>
                 </div>
+                <div class="col-md-4 justify-content-end">
+                    <a href="#" id="filter-button" class="btn icon icon-left btn-primary">
+                        <i class="bi bi-funnel-fill"></i>
+                        Filter
+                    </a>
+                </div>
             </div>
             <section class="section">
                 <div class="card">
@@ -113,62 +119,28 @@
 <div th:replace="~{components/fragments :: js-libraries}"></div>
 <script>
     $(document).ready(function () {
+        let isFilteredByEmployee = false;
+
         function rowToAdd(attendance) {
             return [
                 attendance.employee,
                 attendance.checkIn,
                 `<span class="badge rounded-pill ${attendance.checkInStatus === 'onTime' ? 'bg-success' :
                     (attendance.checkInStatus === 'lateArrival' ? 'bg-secondary' :
-                        (attendance.checkInStatus === 'absent' ? 'bg-danger' : ''))}">
-            ${attendance.checkInStatus === 'onTime' ? 'On Time' :
+                        (attendance.checkInStatus === 'absent' ? 'bg-danger' : ''))}">${attendance.checkInStatus === 'onTime' ? 'On Time' :
                     (attendance.checkInStatus === 'lateArrival' ? 'Late Arrival' :
-                        (attendance.checkInStatus === 'absent' ? 'Absent' : ''))}
-        </span>`,
+                        (attendance.checkInStatus === 'absent' ? 'Absent' : ''))}</span>`,
                 attendance.checkOut,
                 `<span class="badge rounded-pill ${attendance.checkOutStatus === 'onTime' ? 'bg-success' :
-                    (attendance.checkOutStatus === 'leaveEarly' ? 'bg-warning' : '')}">
-            ${attendance.checkOutStatus === 'onTime' ? 'On Time' :
-                    (attendance.checkOutStatus === 'leaveEarly' ? 'Leave Early' : '')}
-        </span>`,
+                    (attendance.checkOutStatus === 'leaveEarly' ? 'bg-warning' : '')}">${attendance.checkOutStatus === 'onTime' ? 'On Time' :
+                    (attendance.checkOutStatus === 'leaveEarly' ? 'Leave Early' : '')}</span>`,
                 attendance.notes
             ];
         }
 
-        flatpickr("#attendance-date", {
-            dateFormat: "Y-m-d",
-            defaultDate: "today",
-            locale: "vi",
-            onChange: function (selectedDates, dateStr, instance) {
-                const selectedDate = dateStr;
-                const dateParts = selectedDate.split('-');
-                const day = dateParts[2];
-                const month = dateParts[1];
-                const year = dateParts[0];
-
-                $.ajax({
-                    url: `/api/attendance/v1`,
-                    type: 'GET',
-                    data: {
-                        day: day,
-                        month: month,
-                        year: year
-                    },
-                    success: function (response) {
-                        console.log(response);
-                        updateAttendanceTable(response);
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('Error:', error);
-                    }
-                });
-            }
-        });
-
         function updateAttendanceTable(attendances) {
             const table = $('#table1').DataTable();
-
             table.clear();
-
             if (attendances.length > 0) {
                 attendances.forEach(function (attendance) {
                     table.row.add(rowToAdd(attendance)).draw();
@@ -177,6 +149,66 @@
                 table.draw();
             }
         }
+
+        flatpickr("#attendance-date", {
+            dateFormat: "Y-m-d",
+            defaultDate: "today",
+            locale: "vi",
+            onChange: function (selectedDates, dateStr, instance) {
+                loadAttendanceData(dateStr);
+            }
+        });
+
+        function loadAttendanceData(selectedDate) {
+            const dateParts = selectedDate.split('-');
+            const day = dateParts[2];
+            const month = dateParts[1];
+            const year = dateParts[0];
+
+            let data = { day: day, month: month, year: year };
+
+            if (isFilteredByEmployee) {
+                const employeeId = $('#employee-picker').val();
+                if (employeeId) {
+                    data.employeeId = employeeId;
+                }
+            }
+
+            $.ajax({
+                url: `/api/attendance/v1`,
+                type: 'GET',
+                data: data,
+                success: function (response) {
+                    console.log(response);
+                    updateAttendanceTable(response);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+
+        $('#filter-button').on('click', function () {
+            const employeeId = $('#employee-picker').val();
+
+            if (isFilteredByEmployee) {
+                isFilteredByEmployee = false;
+                $(this).text('Filter').removeClass('btn-danger').addClass('btn-primary');
+            } else {
+                if (employeeId) {
+                    isFilteredByEmployee = true;
+                    $(this).text('Clear Filter').removeClass('btn-primary').addClass('btn-danger');
+                } else {
+                    alert("Please select an employee to filter.");
+                    return;
+                }
+            }
+
+            const selectedDate = $('#attendance-date').val();
+            if (selectedDate) {
+                loadAttendanceData(selectedDate);
+            }
+        });
     });
 </script>
 </body>

@@ -3,6 +3,7 @@ package org.example.springboot_demo.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import org.example.springboot_demo.dtos.EmployeeDto;
 import org.example.springboot_demo.mappers.impl.EmployeeMapper;
+import org.example.springboot_demo.models.Email;
 import org.example.springboot_demo.models.EmployeeModel;
 import org.example.springboot_demo.services.impl.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ public class EmployeeController {
 
     @Operation(summary = "Get All Employees")
     @GetMapping
-    public ResponseEntity<?> getEmployee(){
+    public ResponseEntity<?> getEmployee() {
         List<EmployeeDto> result = employeeService.findAll();
         return result != null && !result.isEmpty()
                 ? new ResponseEntity<>(result, HttpStatus.OK)
@@ -36,11 +37,19 @@ public class EmployeeController {
 
     @Operation(summary = "Add An Employee")
     @PostMapping
-    public ResponseEntity<?> addEmployee(@RequestBody EmployeeModel employeeModel){
+    public ResponseEntity<?> addEmployee(@RequestBody EmployeeModel employeeModel) {
         EmployeeDto result = employeeService.save(mapper.toEntity(employeeModel));
         return result != null
                 ? new ResponseEntity<>(result, HttpStatus.CREATED)
                 : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping("send_email")
+    public ResponseEntity<?> sendEmail(@RequestBody Email email) {
+        boolean result = employeeService.sendEmail(email);
+        return result
+                ? new ResponseEntity<>("Email sent to " + email, HttpStatus.OK)
+                : new ResponseEntity<>("Failed to sent email to " + email, HttpStatus.BAD_REQUEST);
     }
 }
 

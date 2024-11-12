@@ -13,6 +13,7 @@ public class EmployeeMapper implements IBaseMapper<EmployeeDto, EmployeeModel, E
         return EmployeeDto.builder()
                 .employeeId(employeeEntity.getEmployeeId())
                 .name(employeeEntity.getName())
+                .email(employeeEntity.getEmail())
                 .unusedPaidLeaves(employeeEntity.getUnusedPaidLeaves())
                 .build();
     }
@@ -21,6 +22,8 @@ public class EmployeeMapper implements IBaseMapper<EmployeeDto, EmployeeModel, E
     public EmployeeEntity toEntity(EmployeeModel employeeModel) {
         return EmployeeEntity.builder()
                 .name(employeeModel.getName())
+                .email(employeeModel.getEmail())
+                .unusedPaidLeaves(employeeModel.getUnusedPaidLeaves())
                 .build();
     }
 }
