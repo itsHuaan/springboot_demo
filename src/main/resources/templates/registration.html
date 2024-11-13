@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Welcome</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="shortcut icon" href="/images/logo/favicon.svg" type="image/x-icon">
     <style>
         @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
 
@@ -53,6 +54,7 @@
         }
 
         button {
+            cursor: pointer;
             border-radius: 20px;
             border: 1px solid #435ebe;
             background-color: #435ebe;
@@ -349,7 +351,7 @@
             </div>
             <span>or use your email for registration</span>
             <input type="text" placeholder="Name" />
-            <input type="email" placeholder="Email" />
+            <input type="email" placeholder="Email" id="emailInput"/>
             <input type="password" placeholder="Password" />
             <button id="_signUp">Sign Up</button>
         </form>
@@ -397,6 +399,8 @@
 
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="/js/otpEmail.js"></script>
 <script>
     const signUpButton = document.getElementById('signUp');
     const signInButton = document.getElementById('signIn');
@@ -420,7 +424,37 @@
     });
 
     _signUpButton.addEventListener('click', () => {
-        showOtpPopup();
+        const recipientEmail = $('#emailInput').val();
+
+        $.ajax({
+            url: 'api/login/v1',
+            type: 'GET',
+            success: function(otpData) {
+                const emailData = {
+                    recipient: recipientEmail,
+                    subject: "Confirmation Code",
+                    content: otpEmail(otpData.otpCode)
+                };
+
+                console.log("Email Data to Send:", emailData);
+
+                $.ajax({
+                    url: 'api/login/v1',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(emailData),
+                    success: function() {
+                        showOtpPopup();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to send email:", xhr.status, error); // Log error details
+                    }
+                });
+            },
+            error: function() {
+                console.error("Failed to retrieve OTP");
+            }
+        });
     });
 
     otpInput.addEventListener('input', () => {
@@ -452,8 +486,8 @@
 
     function startTimer() {
         clearInterval(countdown);
-        let time = 5;
-        otpTimer.innerText = "00:05";
+        let time = 180;
+        otpTimer.innerText = `0${Math.floor(time / 60)}:${time % 60 < 10 ? '0' : ''}${time % 60}`;
         resendOtp.classList.remove("active");
         confirmOtpBtn.disabled = otpInput.value === '';
 
@@ -467,6 +501,8 @@
             }
         }, 1000);
     }
+
+
 </script>
 </body>
 

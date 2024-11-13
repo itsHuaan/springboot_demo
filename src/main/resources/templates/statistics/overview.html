@@ -117,7 +117,6 @@
     /*]]>*/
 </script>
 <script src="/js/mailContent.js"></script>
-<script src="/js/otpEmail.js"></script>
 <script>
     $(document).ready(function () {
         $('#send-button').click(function () {
@@ -128,10 +127,6 @@
             let emailCount = emails.length;
             let emailsSent = 0;
 
-            const otpCode = '190901';
-
-            const emailTemplate = otpEmail(otpCode);
-
 
             emails.forEach(function (emailModel) {
                 $.ajax({
@@ -141,7 +136,7 @@
                     data: JSON.stringify({
                         recipient: emailModel,
                         subject: subject,
-                        content: emailTemplate
+                        content: mailContent()
                     }),
                     success: function () {
                         emailsSent++;

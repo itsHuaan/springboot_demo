@@ -1,6 +1,7 @@
 package org.example.springboot_demo.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import org.example.springboot_demo.dtos.OtpDto;
 import org.example.springboot_demo.mappers.impl.OtpMapper;
 import org.example.springboot_demo.models.EmailModel;
 import org.example.springboot_demo.models.OtpModel;
@@ -28,12 +29,8 @@ public class LoginController {
     @Operation(summary = "Sending an OTP to email")
     @PostMapping
     public ResponseEntity<String> sendOtp(@RequestBody EmailModel emailModel) {
-        OtpModel otp = new OtpModel();
-        otp.setOtpCode(otpService.generateOtp());
-        emailModel.setContent(otp.getOtpCode());
         boolean result = emailService.send(emailModel);
         if (result) {
-            otpService.save(otpMapper.toEntity(otp));
             return new ResponseEntity<>("Email sent", HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Failed to sent", HttpStatus.BAD_REQUEST);
@@ -42,7 +39,12 @@ public class LoginController {
 
     @Operation(summary = "Generate an OTP")
     @GetMapping
-    public ResponseEntity<String> otp() {
-        return new ResponseEntity<>(otpService.generateOtp(), HttpStatus.OK);
+    public ResponseEntity<?> otp() {
+        OtpModel otp = new OtpModel();
+        otp.setOtpCode(otpService.generateOtp());
+        OtpDto otpCode = otpService.save(otpMapper.toEntity(otp));
+        return otpCode != null
+                ? new ResponseEntity<>(otpCode, HttpStatus.OK)
+                : new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 }
