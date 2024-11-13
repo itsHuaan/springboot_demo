@@ -120,26 +120,38 @@
     $(document).ready(function () {
         $('#send-button').click(function () {
             const subject = "Test Email";
+            const selectedMonthYear = $("#month-picker").val();
+            const [year, month] = selectedMonthYear.split('-');
+
+            let emailCount = emails.length;
+            let emailsSent = 0;
 
             emails.forEach(function (email) {
                 $.ajax({
-                    url: '/api/employee/v1/send_email',
-                    type: 'POST',
+                    url: `/api/attendance/v1/send_email`,
+                    type: 'GET',
                     contentType: 'application/json',
-                    data: JSON.stringify({
+                    data: {
                         recipient: email,
                         subject: subject,
-                        content: content
-                    }),
+                        content: mailContent,
+                        year: year,
+                        month: month
+                    },
                     success: function () {
-                        console.log("Email sent to " + email);
+                        emailsSent++;
+                        if (emailsSent === emailCount) {
+                            console.log("All emails sent successfully");
+                        }
                     },
                     error: function () {
-                        console.log("Failed to send email to " + email);
+                        emailsSent++;
+                        if (emailsSent === emailCount) {
+                            alert("Emails sent, but some failed");
+                        }
                     }
                 });
             });
-            alert("Email sent");
         });
 
         function detailButtonClicked() {

@@ -43,13 +43,5 @@ public class EmployeeController {
                 ? new ResponseEntity<>(result, HttpStatus.CREATED)
                 : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
-
-    @PostMapping("send_email")
-    public ResponseEntity<?> sendEmail(@RequestBody Email email) {
-        boolean result = employeeService.sendEmail(email);
-        return result
-                ? new ResponseEntity<>("Email sent to " + email, HttpStatus.OK)
-                : new ResponseEntity<>("Failed to sent email to " + email, HttpStatus.BAD_REQUEST);
-    }
 }
 

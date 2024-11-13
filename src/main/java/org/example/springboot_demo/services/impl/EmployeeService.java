@@ -23,15 +23,12 @@ public class EmployeeService implements IEmployeeService {
 
     private final IEmployeeRepository iEmployeeRepository;
     private final EmployeeMapper employeeMapper;
-    private final JavaMailSender mailSender;
 
     @Autowired
     public EmployeeService(IEmployeeRepository iEmployeeRepository,
-                           EmployeeMapper employeeMapper,
-                           JavaMailSender mailSender) {
+                           EmployeeMapper employeeMapper) {
         this.iEmployeeRepository = iEmployeeRepository;
         this.employeeMapper = employeeMapper;
-        this.mailSender = mailSender;
     }
 
     @Override
@@ -52,21 +49,5 @@ public class EmployeeService implements IEmployeeService {
     @Override
     public int delete(Long aLong) {
         return 0;
-    }
-
-    public boolean sendEmail(Email email) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setTo(email.getRecipient());
-            helper.setSubject(email.getSubject());
-            helper.setText(email.getContent(), true);
-
-            mailSender.send(message);
-            return true;
-        } catch (MessagingException e) {
-            return false;
-        }
     }
 }

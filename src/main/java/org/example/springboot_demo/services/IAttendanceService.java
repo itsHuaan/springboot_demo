@@ -4,10 +4,10 @@ import org.example.springboot_demo.dtos.AttendanceByDate;
 import org.example.springboot_demo.dtos.AttendanceStatisticsDto;
 import org.example.springboot_demo.dtos.AttendanceDto;
 import org.example.springboot_demo.entities.AttendanceEntity;
+import org.example.springboot_demo.models.Email;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface IAttendanceService extends IBaseService<AttendanceDto, AttendanceEntity, Long> {
     List<AttendanceDto> getByDate(LocalDate date);
@@ -16,4 +16,5 @@ public interface IAttendanceService extends IBaseService<AttendanceDto, Attendan
     List<AttendanceByDate> getAttendanceGroupByDate();
     List<AttendanceDto> getByEmployeeId(Long employeeId);
     List<AttendanceDto> getByEmployeeIdAndDate(Long employeeId, LocalDate date);
+    boolean sendEmail(Email email, List<AttendanceStatisticsDto> overviewStatistics);
 }

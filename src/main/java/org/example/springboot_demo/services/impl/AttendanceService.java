@@ -1,5 +1,7 @@
 package org.example.springboot_demo.services.impl;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.example.springboot_demo.dtos.AttendanceByDate;
 import org.example.springboot_demo.dtos.AttendanceStatisticsDto;
 import org.example.springboot_demo.dtos.AttendanceDto;
@@ -9,14 +11,20 @@ import org.example.springboot_demo.entities.EmployeeEntity;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
 import org.example.springboot_demo.mappers.impl.EmployeeMapper;
 import org.example.springboot_demo.models.AttendanceStatus;
+import org.example.springboot_demo.models.Email;
 import org.example.springboot_demo.repositories.IAttendanceRepository;
 import org.example.springboot_demo.repositories.IEmployeeRepository;
 import org.example.springboot_demo.services.IAttendanceService;
+import org.example.springboot_demo.utils.excelUtils;
 import org.example.springboot_demo.utils.specifications.AttendanceSpecifications;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -32,16 +40,19 @@ public class AttendanceService implements IAttendanceService {
     private final IEmployeeRepository iEmployeeRepository;
     private final AttendanceMapper attendanceMapper;
     private final EmployeeMapper employeeMapper;
+    private final JavaMailSender mailSender;
 
     @Autowired
     public AttendanceService(final IAttendanceRepository iAttendanceRepository,
                              final IEmployeeRepository iEmployeeRepository,
                              final AttendanceMapper attendanceMapper,
-                             final EmployeeMapper employeeMapper) {
+                             final EmployeeMapper employeeMapper,
+                             JavaMailSender mailSender) {
         this.iAttendanceRepository = iAttendanceRepository;
         this.iEmployeeRepository = iEmployeeRepository;
         this.attendanceMapper = attendanceMapper;
         this.employeeMapper = employeeMapper;
+        this.mailSender = mailSender;
     }
 
     @Override
@@ -174,8 +185,6 @@ public class AttendanceService implements IAttendanceService {
         return statistics;
     }
 
-
-
     @Override
     public List<AttendanceByDate> getAttendanceGroupByDate() {
         List<AttendanceEntity> entities = iAttendanceRepository.findAll(hasLatestCheckOut());
@@ -202,6 +211,26 @@ public class AttendanceService implements IAttendanceService {
     public List<AttendanceDto> getByEmployeeIdAndDate(Long employeeId, LocalDate date) {
         Specification<AttendanceEntity> specification = Specification.where(hasEmployeeId(employeeId).and(hasDate(date)));
         return iAttendanceRepository.findAll(specification).stream().map(attendanceMapper::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean sendEmail(Email email, List<AttendanceStatisticsDto> overviewStatistics) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            ByteArrayResource attachment = excelUtils.exportToExcelAndAttachToEmail(overviewStatistics);
+            helper.setTo(email.getRecipient());
+            helper.setSubject(email.getSubject());
+            helper.setText(email.getContent(), true);
+            helper.addAttachment("Bang cham cong.xlsx", attachment);
+
+            mailSender.send(message);
+            return true;
+        } catch (MessagingException e) {
+            return false;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void handleLeaveDays(AttendanceEntity attendanceEntity, long employeeId, String checkInStatus) {
@@ -331,7 +360,6 @@ public class AttendanceService implements IAttendanceService {
                         Collectors.counting()
                 ));
     }
-
 
     private long getSumLateArrivalTime(Specification<AttendanceEntity> specification) {
         return iAttendanceRepository.findAll(specification).stream()

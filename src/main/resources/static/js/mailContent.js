@@ -18,7 +18,7 @@ var mailContent = `<!DOCTYPE html>
         <li><strong>Số tiền:</strong> 15,000,000 VND</li>
     </ul>
 
-    <p>Bên cạnh đó, bảng chấm công của bạn trong kỳ làm việc vừa qua cũng đã được cập nhật. Bạn có thể xem chi tiết bảng chấm công tại hệ thống nội bộ của công ty.</p>
+    <p>Bên cạnh đó, bảng chấm công của bạn trong kỳ làm việc vừa qua cũng đã được cập nhật. Bạn có thể xem chi tiết bảng chấm công trong tệp đính kèm email này.</p>
 
     <p>Hãy kiểm tra kỹ và phản hồi lại cho chúng tôi nếu có bất kỳ thắc mắc nào về số tiền lương hoặc bảng chấm công.</p>
 

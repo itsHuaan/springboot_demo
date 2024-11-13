@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.example.springboot_demo.dtos.AttendanceDto;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
 import org.example.springboot_demo.models.AttendanceModel;
+import org.example.springboot_demo.models.Email;
 import org.example.springboot_demo.services.impl.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -68,5 +69,18 @@ public class AttendanceController {
                                                      @RequestParam(required = false) Integer month,
                                                      @RequestParam(required = false) Integer year) {
         return new ResponseEntity<>(attendanceService.getStatistics(employeeId, month, year), HttpStatus.OK);
+    }
+
+    @GetMapping("send_email")
+    public ResponseEntity<?> sendEmail(@RequestParam String recipient,
+                                       @RequestParam String subject,
+                                       @RequestParam String content,
+                                       @RequestParam(required = false) Integer month,
+                                       @RequestParam(required = false) Integer year) {
+        Email email = new Email(recipient, subject, content);
+        boolean result = attendanceService.sendEmail(email, attendanceService.getStatistics(null, month, year));
+        return result
+                ? new ResponseEntity<>("Email sent to " + email, HttpStatus.OK)
+                : new ResponseEntity<>("Failed to sent email to " + email, HttpStatus.BAD_REQUEST);
     }
 }
