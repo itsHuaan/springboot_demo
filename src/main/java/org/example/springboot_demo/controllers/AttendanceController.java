@@ -4,8 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.example.springboot_demo.dtos.AttendanceDto;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
 import org.example.springboot_demo.models.AttendanceModel;
-import org.example.springboot_demo.models.Email;
+import org.example.springboot_demo.models.EmailModel;
 import org.example.springboot_demo.services.impl.AttendanceService;
+import org.example.springboot_demo.services.impl.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +19,15 @@ import java.time.LocalTime;
 @RequestMapping("api/attendance/v1")
 public class AttendanceController {
     private final AttendanceService attendanceService;
+    private final EmailService emailService;
     private final AttendanceMapper mapper;
 
     @Autowired
     public AttendanceController(final AttendanceService attendanceService,
+                                EmailService emailService,
                                 final AttendanceMapper mapper) {
         this.attendanceService = attendanceService;
+        this.emailService = emailService;
         this.mapper = mapper;
     }
 
@@ -71,16 +75,13 @@ public class AttendanceController {
         return new ResponseEntity<>(attendanceService.getStatistics(employeeId, month, year), HttpStatus.OK);
     }
 
-    @GetMapping("send_email")
-    public ResponseEntity<?> sendEmail(@RequestParam String recipient,
-                                       @RequestParam String subject,
-                                       @RequestParam String content,
+    @PostMapping("send_email")
+    public ResponseEntity<?> sendEmail(@RequestBody EmailModel emailModel,
                                        @RequestParam(required = false) Integer month,
                                        @RequestParam(required = false) Integer year) {
-        Email email = new Email(recipient, subject, content);
-        boolean result = attendanceService.sendEmail(email, attendanceService.getStatistics(null, month, year));
+        boolean result = attendanceService.sendEmail(emailModel, attendanceService.getStatistics(null, month, year));
         return result
-                ? new ResponseEntity<>("Email sent to " + email, HttpStatus.OK)
-                : new ResponseEntity<>("Failed to sent email to " + email, HttpStatus.BAD_REQUEST);
+                ? new ResponseEntity<>("EmailModel sent to " + emailModel, HttpStatus.OK)
+                : new ResponseEntity<>("Failed to sent emailModel to " + emailModel, HttpStatus.BAD_REQUEST);
     }
 }

@@ -1,18 +1,11 @@
 package org.example.springboot_demo.services.impl;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import org.example.springboot_demo.dtos.EmployeeDto;
 import org.example.springboot_demo.entities.EmployeeEntity;
 import org.example.springboot_demo.mappers.impl.EmployeeMapper;
-import org.example.springboot_demo.models.Email;
 import org.example.springboot_demo.repositories.IEmployeeRepository;
 import org.example.springboot_demo.services.IEmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

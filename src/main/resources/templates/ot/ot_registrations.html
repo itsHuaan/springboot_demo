@@ -119,7 +119,7 @@
                     status: status
                 };
                 $.ajax({
-                    url: `api/ot/v1/${id}`,
+                    url: `api/ot/v1/update?id=${id}`,
                     type: 'PUT',
                     contentType: 'application/json',
                     data: JSON.stringify(requestData),

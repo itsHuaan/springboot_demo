@@ -46,8 +46,8 @@ public class OTRegistrationController {
     }
 
     @Operation(summary = "Update an OT Registration")
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateOT(@PathVariable Long id, @RequestBody OTRegistrationModel registration) {
+    @PutMapping("update")
+    public ResponseEntity<?> updateOT(@RequestParam Long id, @RequestBody OTRegistrationModel registration) {
         OTRegistrationDto registrationDto = otRegistrationService.findById(id);
         if (registrationDto == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

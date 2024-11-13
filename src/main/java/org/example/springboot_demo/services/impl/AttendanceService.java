@@ -5,13 +5,12 @@ import jakarta.mail.internet.MimeMessage;
 import org.example.springboot_demo.dtos.AttendanceByDate;
 import org.example.springboot_demo.dtos.AttendanceStatisticsDto;
 import org.example.springboot_demo.dtos.AttendanceDto;
-import org.example.springboot_demo.dtos.EmployeeDto;
 import org.example.springboot_demo.entities.AttendanceEntity;
 import org.example.springboot_demo.entities.EmployeeEntity;
 import org.example.springboot_demo.mappers.impl.AttendanceMapper;
 import org.example.springboot_demo.mappers.impl.EmployeeMapper;
 import org.example.springboot_demo.models.AttendanceStatus;
-import org.example.springboot_demo.models.Email;
+import org.example.springboot_demo.models.EmailModel;
 import org.example.springboot_demo.repositories.IAttendanceRepository;
 import org.example.springboot_demo.repositories.IEmployeeRepository;
 import org.example.springboot_demo.services.IAttendanceService;
@@ -40,19 +39,19 @@ public class AttendanceService implements IAttendanceService {
     private final IEmployeeRepository iEmployeeRepository;
     private final AttendanceMapper attendanceMapper;
     private final EmployeeMapper employeeMapper;
-    private final JavaMailSender mailSender;
+    private final EmailService emailService;
 
     @Autowired
     public AttendanceService(final IAttendanceRepository iAttendanceRepository,
                              final IEmployeeRepository iEmployeeRepository,
                              final AttendanceMapper attendanceMapper,
                              final EmployeeMapper employeeMapper,
-                             JavaMailSender mailSender) {
+                             EmailService emailService) {
         this.iAttendanceRepository = iAttendanceRepository;
         this.iEmployeeRepository = iEmployeeRepository;
         this.attendanceMapper = attendanceMapper;
         this.employeeMapper = employeeMapper;
-        this.mailSender = mailSender;
+        this.emailService = emailService;
     }
 
     @Override
@@ -214,22 +213,13 @@ public class AttendanceService implements IAttendanceService {
     }
 
     @Override
-    public boolean sendEmail(Email email, List<AttendanceStatisticsDto> overviewStatistics) {
+    public boolean sendEmail(EmailModel emailModel, List<AttendanceStatisticsDto> overviewStatistics) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             ByteArrayResource attachment = excelUtils.exportToExcelAndAttachToEmail(overviewStatistics);
-            helper.setTo(email.getRecipient());
-            helper.setSubject(email.getSubject());
-            helper.setText(email.getContent(), true);
-            helper.addAttachment("Bang cham cong.xlsx", attachment);
-
-            mailSender.send(message);
+            emailService.sendWithAttachment(emailModel, attachment);
             return true;
-        } catch (MessagingException e) {
-            return false;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return false;
         }
     }
 

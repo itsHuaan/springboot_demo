@@ -33,7 +33,7 @@ public class HomeController {
     private final OTRegistrationMapper otRegistrationMapper;
 
     @Autowired
-    public HomeController(AttendanceService attendanceService, 
+    public HomeController(AttendanceService attendanceService,
                           EmployeeService employeeService,
                           OTRegistrationService otRegistrationService,
                           AttendanceMapper attendanceMapper,
@@ -56,7 +56,7 @@ public class HomeController {
     @GetMapping("attendances")
     public String attendancesPage(Model model) {
         model.addAttribute("employees", employeeService.findAll());
-        List<AttendanceDto> attendances =  attendanceService.getByDate(LocalDate.now());
+        List<AttendanceDto> attendances = attendanceService.getByDate(LocalDate.now());
         model.addAttribute("attendances", attendances);
         model.addAttribute("currentPath", "/attendances");
         return "attendances";
@@ -123,5 +123,10 @@ public class HomeController {
         model.addAttribute("employees", employees);
         model.addAttribute("currentPath", "/ot_register");
         return "ot/register_for_ot";
+    }
+
+    @GetMapping("login")
+    public String login(Model model) {
+        return "registration";
     }
 }

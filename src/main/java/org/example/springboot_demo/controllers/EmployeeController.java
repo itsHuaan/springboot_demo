@@ -3,7 +3,6 @@ package org.example.springboot_demo.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import org.example.springboot_demo.dtos.EmployeeDto;
 import org.example.springboot_demo.mappers.impl.EmployeeMapper;
-import org.example.springboot_demo.models.Email;
 import org.example.springboot_demo.models.EmployeeModel;
 import org.example.springboot_demo.services.impl.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;

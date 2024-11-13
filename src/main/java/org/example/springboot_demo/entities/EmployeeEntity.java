@@ -23,8 +23,8 @@ public class EmployeeEntity {
     @NotEmpty(message = "Name cannot be empty")
     private String name;
 
-    @Email(message = "Email is not valid", regexp = "^[\\\\w!#$%&amp;'*+/=?`{|}~^-]+(?:\\\\.[\\\\w!#$%&amp;'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\\\.)+[a-zA-Z]{2,6}$")
-    @NotEmpty(message = "Email cannot be empty")
+    @Email(message = "EmailModel is not valid", regexp = "^[\\\\w!#$%&amp;'*+/=?`{|}~^-]+(?:\\\\.[\\\\w!#$%&amp;'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\\\.)+[a-zA-Z]{2,6}$")
+    @NotEmpty(message = "EmailModel cannot be empty")
     private String email;
 
     private int unusedPaidLeaves;

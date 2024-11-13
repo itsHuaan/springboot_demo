@@ -1,4 +1,5 @@
-var mailContent = `<!DOCTYPE html>
+function mailContent(){
+    return `<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -30,3 +31,4 @@ var mailContent = `<!DOCTYPE html>
     Điện thoại: 0123 456 789 | Email: hr@company.com</p>
 </body>
 </html>`;
+}
