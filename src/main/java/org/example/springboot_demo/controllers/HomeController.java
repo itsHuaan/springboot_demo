@@ -125,8 +125,8 @@ public class HomeController {
         return "ot/register_for_ot";
     }
 
-    @GetMapping("login")
+    @GetMapping("welcome")
     public String login(Model model) {
-        return "registration";
+        return "welcome";
     }
 }
