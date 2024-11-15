@@ -23,7 +23,13 @@ public class EmployeeEntity {
     @NotEmpty(message = "Name cannot be empty")
     private String name;
 
-    @Email(message = "EmailModel is not valid", regexp = "^[\\\\w!#$%&amp;'*+/=?`{|}~^-]+(?:\\\\.[\\\\w!#$%&amp;'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\\\.)+[a-zA-Z]{2,6}$")
+    @NotEmpty(message = "Username cannot be empty")
+    private String username;
+
+    @NotEmpty(message = "Password cannot be empty")
+    private String password;
+
+//    @Email(message = "EmailModel is not valid", regexp = "^[\\\\w!#$%&amp;'*+/=?`{|}~^-]+(?:\\\\.[\\\\w!#$%&amp;'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\\\.)+[a-zA-Z]{2,6}$")
     @NotEmpty(message = "EmailModel cannot be empty")
     private String email;
 
@@ -34,4 +40,11 @@ public class EmployeeEntity {
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OTRegistrationEntity> otRegistrationList;
+
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    private RoleEntity role;
+
+    @NotNull
+    private boolean active;
 }

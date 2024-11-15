@@ -18,9 +18,4 @@ public class SpringbootDemoApplication {
     public static void main(String[] args) {
         SpringApplication.run(SpringbootDemoApplication.class, args);
     }
-
-//    @Scheduled(cron = "0 0 18 5 * *")
-//    public void function() {
-//        System.out.println("Current time: " + LocalTime.now());
-//    }
 }

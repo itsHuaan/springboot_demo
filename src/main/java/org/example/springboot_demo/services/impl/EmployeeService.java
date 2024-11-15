@@ -1,18 +1,22 @@
 package org.example.springboot_demo.services.impl;
 
+import org.example.springboot_demo.configurations.UserDetailsImpl;
 import org.example.springboot_demo.dtos.EmployeeDto;
 import org.example.springboot_demo.entities.EmployeeEntity;
 import org.example.springboot_demo.mappers.impl.EmployeeMapper;
 import org.example.springboot_demo.repositories.IEmployeeRepository;
 import org.example.springboot_demo.services.IEmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 
 @Service
-public class EmployeeService implements IEmployeeService {
+public class EmployeeService implements IEmployeeService, UserDetailsService {
 
     private final IEmployeeRepository iEmployeeRepository;
     private final EmployeeMapper employeeMapper;
@@ -42,5 +46,15 @@ public class EmployeeService implements IEmployeeService {
     @Override
     public int delete(Long aLong) {
         return 0;
+    }
+
+    @Override
+    public EmployeeDto findByUsername(String username) {
+        return employeeMapper.toDTO(iEmployeeRepository.findByUsername(username));
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return new UserDetailsImpl(iEmployeeRepository.findByUsername(username));
     }
 }

@@ -7,20 +7,21 @@ import org.example.springboot_demo.models.EmailModel;
 import org.example.springboot_demo.models.OtpModel;
 import org.example.springboot_demo.services.impl.EmailService;
 import org.example.springboot_demo.services.impl.OtpService;
+import org.example.springboot_demo.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/login/v1")
-public class LoginController {
+@RequestMapping(value = Const.PREFIX_VERSION + "/login")
+public class RegistrationController {
     private final OtpService otpService;
     private final EmailService emailService;
     private final OtpMapper otpMapper;
 
     @Autowired
-    public LoginController(OtpService otpService, EmailService emailService, OtpMapper otpMapper) {
+    public RegistrationController(OtpService otpService, EmailService emailService, OtpMapper otpMapper) {
         this.otpService = otpService;
         this.emailService = emailService;
         this.otpMapper = otpMapper;

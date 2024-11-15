@@ -10,6 +10,9 @@ import lombok.*;
 public class EmployeeDto {
     private long employeeId;
     private String name;
+    private String username;
     private String email;
+    private long roleId;
     private int unusedPaidLeaves;
+    private boolean isActive;
 }

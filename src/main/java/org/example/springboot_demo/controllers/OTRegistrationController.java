@@ -6,6 +6,7 @@ import org.example.springboot_demo.dtos.OTRegistrationDto;
 import org.example.springboot_demo.mappers.impl.OTRegistrationMapper;
 import org.example.springboot_demo.models.OTRegistrationModel;
 import org.example.springboot_demo.services.impl.OTRegistrationService;
+import org.example.springboot_demo.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/ot/v1")
+@RequestMapping(value = Const.PREFIX_VERSION + "/ot")
 public class OTRegistrationController {
     private final OTRegistrationService otRegistrationService;
     private final OTRegistrationMapper otRegistrationMapper;

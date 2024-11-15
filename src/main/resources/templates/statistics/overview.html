@@ -220,7 +220,7 @@
             const year = dateParts[0];
             let data = {month: month, year: year};
             $.ajax({
-                url: `/api/attendance/v1/statistics`,
+                url: `/v1/api/attendance/statistics`,
                 type: `GET`,
                 data: data,
                 success: function (response) {

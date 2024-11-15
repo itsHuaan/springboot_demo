@@ -7,6 +7,7 @@ import org.example.springboot_demo.models.AttendanceModel;
 import org.example.springboot_demo.models.EmailModel;
 import org.example.springboot_demo.services.impl.AttendanceService;
 import org.example.springboot_demo.services.impl.EmailService;
+import org.example.springboot_demo.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @RestController
-@RequestMapping("api/attendance/v1")
+@RequestMapping(value = Const.PREFIX_VERSION + "/attendance")
 public class AttendanceController {
     private final AttendanceService attendanceService;
     private final EmailService emailService;
