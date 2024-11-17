@@ -12,4 +12,9 @@ public class EmployeeSpecifications {
         return (Root<EmployeeEntity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) ->
                 criteriaBuilder.isNotNull(root.get("email"));
     }
+
+    public static Specification<EmployeeEntity> isExisting(String email, String username) {
+        return (Root<EmployeeEntity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) ->
+                criteriaBuilder.and(criteriaBuilder.equal(root.get("email"), email), criteriaBuilder.equal(root.get("username"), username));
+    }
 }

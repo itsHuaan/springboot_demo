@@ -129,4 +129,14 @@ public class HomeController {
     public String login(Model model) {
         return "welcome";
     }
+
+    @GetMapping("confirmation")
+    public String confirmation(Model model) {
+        return "confirmation";
+    }
+
+    @GetMapping("register_confirmation")
+    public String registerConfirmation(Model model) {
+        return "register_confirmation";
+    }
 }

@@ -50,10 +50,11 @@ public class EmployeeController {
     @Operation(summary = "Add An Employee")
     @PostMapping
     public ResponseEntity<?> addEmployee(@RequestBody EmployeeModel employeeModel) {
-        EmployeeDto result = employeeService.save(mapper.toEntity(employeeModel));
+        boolean isExisting = employeeService.isExisting(employeeModel.getUsername(), employeeModel.getEmail());
+        EmployeeDto result = !isExisting ? employeeService.save(mapper.toEntity(employeeModel)) : null;
         return result != null
                 ? new ResponseEntity<>(result, HttpStatus.CREATED)
-                : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                : new ResponseEntity<>("Email or username is used by another employee", HttpStatus.BAD_REQUEST);
     }
 
     @Operation(summary = "Sign In")

@@ -7,6 +7,7 @@ import org.example.springboot_demo.mappers.impl.EmployeeMapper;
 import org.example.springboot_demo.repositories.IEmployeeRepository;
 import org.example.springboot_demo.services.IEmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -51,6 +52,11 @@ public class EmployeeService implements IEmployeeService, UserDetailsService {
     @Override
     public EmployeeDto findByUsername(String username) {
         return employeeMapper.toDTO(iEmployeeRepository.findByUsername(username));
+    }
+
+    @Override
+    public boolean isExisting(String username, String email) {
+        return iEmployeeRepository.findByEmailOrUsername(email, username) != null;
     }
 
     @Override

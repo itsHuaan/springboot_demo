@@ -354,9 +354,9 @@
                 <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
             </div>
             <span>or use your email for registration</span>
-            <input type="text" placeholder="Name"/>
+            <input type="text" placeholder="Name" id="nameInput"/>
+            <input type="text" placeholder="Username" id="usernameInput"/>
             <input type="email" placeholder="Email" id="emailInput"/>
-            <input type="password" placeholder="Password"/>
             <button id="_signUp">Sign Up</button>
         </form>
     </div>
@@ -405,6 +405,7 @@
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="/js/otpEmail.js"></script>
+<script src="/js/tokenEmail.js"></script>
 <script>
     const signUpButton = document.getElementById('signUp');
     const signInButton = document.getElementById('signIn');
@@ -423,15 +424,21 @@
         $('#otpPopup p').text(message).css('color', 'red');
     }
 
-    async function sendOtp(email) {
+    async function sendOtp(name, username, email) {
         $.ajax({
-            url: '/v1/api/login',
-            type: 'GET',
-            success: function (otpData) {
+            url: '/v1/api/login/create_token',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                name: name,
+                username: username,
+                email: email
+            }),
+            success: function (token) {
                 const emailData = {
                     recipient: email,
                     subject: "Confirmation Code",
-                    content: otpEmail(otpData.otpCode)
+                    content: tokenEmailContent(token)
                 };
                 $.ajax({
                     url: 'v1/api/login',
@@ -439,7 +446,7 @@
                     contentType: 'application/json',
                     data: JSON.stringify(emailData),
                     success: function () {
-                        showOtpPopup();
+                        window.location.href = '/confirmation';
                     },
                     error: function (xhr, status, error) {
                         showError("Failed to send email. Please try again.");
@@ -463,7 +470,10 @@
 
     _signUpButton.addEventListener('click', (event) => {
         event.preventDefault();
-        sendOtp($('#emailInput').val());
+        let name = $('#nameInput').val();
+        let username = $('#usernameInput').val();
+        let email = $('#emailInput').val();
+        sendOtp(name, username, email);
     });
 
     otpInput.addEventListener('input', () => {
@@ -472,7 +482,10 @@
 
     resendOtp.addEventListener('click', () => {
         if (resendOtp.classList.contains("active")) {
-            sendOtp($('#emailInput').val());
+            let name = $('#nameInput').val();
+            let username = $('#usernameInput').val();
+            let email = $('#emailInput').val();
+            sendOtp(name, username, email);
         }
     });
 

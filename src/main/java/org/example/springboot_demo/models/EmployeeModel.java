@@ -14,6 +14,6 @@ public class EmployeeModel {
     private String email;
     private String password;
     private int unusedPaidLeaves = 1;
-    private long roleId;
+    private long roleId = 2;
     private boolean isActive = true;
 }

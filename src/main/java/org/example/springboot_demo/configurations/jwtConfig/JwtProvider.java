@@ -39,6 +39,20 @@ public class JwtProvider {
                 .compact();
     }
 
+    public String generateRegistrationToken(String name, String username, String email) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("name", name)
+                .claim("username", username)
+                .claim("email", email)
+                .setExpiration(expiryDate)
+                .setIssuedAt(new Date())
+                .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
+                .compact();
+    }
+
     public Long getUserIdFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(JWT_SECRET)
